@@ -20,7 +20,7 @@ const Sidebar = () => {
 
     return (
         <Sider
-            width={240}
+            width={250}
             style={{
                 background: "#fff",
                 borderRight: "1px solid #f0f0f0",

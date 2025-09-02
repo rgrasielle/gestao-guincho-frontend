@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Space, Row, Col, Card, Typography, List, Tag } from 'antd';
 import {
     PhoneOutlined,
@@ -8,8 +8,16 @@ import {
     ExclamationCircleOutlined,
     ClockCircleOutlined,
     TeamOutlined,
-    PlusOutlined
+    PlusOutlined,
+    CarOutlined
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+
+// Importar os novos componentes
+import CustomModal from '../components/CustomModal';
+import MotoristaFormModal from '../components/MotoristaFormModal';
+import GuinchoFormModal from '../components/GuinchoFormModal';
+import ValoresFormModal from '../components/ValoresFixosFormModal ';
 
 const { Title, Text } = Typography;
 
@@ -94,6 +102,32 @@ const RecentCallsList = ({ calls }) => {
 
 // Componente: DashboardPage
 const DashboardPage = () => {
+    // 1. Estado para controlar o modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState(null);
+
+    const navigate = useNavigate();
+
+    // 2. Funções para controlar o modal
+    const showModal = (title, contentComponent) => {
+        setModalTitle(title);
+        setModalContent(contentComponent);
+        setIsModalOpen(true);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleSave = (values) => {
+        console.log('Salvar dados:', values);
+        setIsModalOpen(false);
+    };
+
+    const handleNewCallClick = () => {
+        navigate('/chamadoform');
+    };
 
     // Dados para os cards de estatísticas (de cima)
     const topStats = [
@@ -180,17 +214,29 @@ const DashboardPage = () => {
         <div>
             {/* Linha de botões */}
             <Space size="middle" style={{ marginBottom: 24, width: '100%' }}>
-                <Button type="primary" size="large" icon={<PlusOutlined />}>
+                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={handleNewCallClick} >
                     Novo Chamado
                 </Button>
-                <Button size="large" icon={<TeamOutlined />}>
+                <Button
+                    size="large"
+                    icon={<TeamOutlined />}
+                    onClick={() => showModal("Cadastrar Motorista", <MotoristaFormModal onCancel={handleCancel} onSave={handleSave} />)}
+                >
                     Cadastrar Motorista
                 </Button>
-                <Button size="large" icon={<TruckOutlined />}>
+                <Button
+                    size="large"
+                    icon={<TruckOutlined />}
+                    onClick={() => showModal("Cadastrar Guincho", <GuinchoFormModal onCancel={handleCancel} onSave={handleSave} />)}
+                >
                     Cadastrar Guincho
                 </Button>
-                <Button size="large" icon={<DollarOutlined />}>
-                    Cadastrar Valores dos Serviços
+                <Button
+                    size="large"
+                    icon={<DollarOutlined />}
+                    onClick={() => showModal("Configurar Valores Fixos", <ValoresFormModal onCancel={handleCancel} onSave={handleSave} />)}
+                >
+                    Configurar Valores Fixos
                 </Button>
             </Space>
 
@@ -228,6 +274,16 @@ const DashboardPage = () => {
                     ))}
                 </Row>
             </div>
+
+            {/* O Modal (visível somente quando isModalOpen é true) */}
+            <CustomModal
+                title={modalTitle}
+                open={isModalOpen}
+                onCancel={handleCancel}
+                onOk={null} // O botão de Salvar está dentro do formulário, então onOk é nulo
+            >
+                {modalContent}
+            </CustomModal>
         </div>
     );
 };

@@ -7,11 +7,19 @@ import {
     GlobalOutlined,
     EnvironmentOutlined,
     CalendarOutlined,
-    FilterOutlined // 👈 Importe o novo ícone
+    FilterOutlined,
+    DollarOutlined,
+    EditOutlined,
+    EyeOutlined
 } from '@ant-design/icons';
 
+import CustomModal from '../components/CustomModal';
+import ValoresServicoFormModal from '../components/ValoresServicoFormModal';
+import EditarChamadoFormModal from '../components/EditarChamadoFormModal';
+import VerChamadoModal from '../components/VerChamadoModal';
+
 const { Option } = Select;
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 // Componente: StatusTag
 const StatusTag = ({ status }) => {
@@ -36,17 +44,17 @@ const StatusTag = ({ status }) => {
     return <Tag color={color}>{text}</Tag>;
 };
 
-// Componente: Filters (CORRIGIDO)
+// Componente: Filters
 const Filters = () => {
-    const [showMoreFilters, setShowMoreFilters] = useState(false); // 👈 Adicionado o estado
+    const [showMoreFilters, setShowMoreFilters] = useState(false);
 
     const handleToggleFilters = () => {
-        setShowMoreFilters(!showMoreFilters); // 👈 Adicionada a função
+        setShowMoreFilters(!showMoreFilters);
     };
 
     return (
         <Card style={{ marginBottom: 24 }} title="Filtros">
-            <Row gutter={[16, 16]} align="bottom">
+            <Row gutter={16} align="bottom">
                 <Col xs={24} sm={12} md={6}>
                     <Text strong style={{ marginBottom: 8, display: 'block' }}>Buscar</Text>
                     <Input
@@ -78,7 +86,7 @@ const Filters = () => {
                         type="default"
                         icon={<FilterOutlined />}
                         style={{ width: '100%' }}
-                        onClick={handleToggleFilters} // 👈 Adicionado o evento de clique
+                        onClick={handleToggleFilters}
                     >
                         Mais Filtros
                     </Button>
@@ -118,7 +126,7 @@ const Filters = () => {
 };
 
 // Componente: CallListItem
-const CallListItem = ({ call }) => {
+const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
     return (
         <Card style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -187,8 +195,25 @@ const CallListItem = ({ call }) => {
                         <Text strong>{call.price}</Text>
                     </div>
                     <Space>
-                        <Button>Ver</Button>
-                        <Button type="primary">Editar</Button>
+                        <Button
+                            icon={<EyeOutlined />}
+                            onClick={() => onShowViewModal(call.id)}
+                        >
+                            Ver
+                        </Button>
+                        <Button
+                            icon={<EditOutlined />}
+                            onClick={() => onShowEditModal(call.id)}
+                        >
+                            Editar
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<DollarOutlined />}
+                            onClick={() => onShowValuesModal(call.id)}
+                        >
+                            Registrar Valores
+                        </Button>
                     </Space>
                 </div>
             </div>
@@ -197,25 +222,35 @@ const CallListItem = ({ call }) => {
 };
 
 // Componente: CallsList
-const CallsList = ({ calls }) => {
+const CallsList = ({ calls, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
     return (
         <div>
-            {calls.map((call, index) => (
-                <CallListItem key={index} call={call} />
+            {calls.map((call) => (
+                <CallListItem
+                    key={call.id}
+                    call={call}
+                    onShowValuesModal={onShowValuesModal}
+                    onShowEditModal={onShowEditModal}
+                    onShowViewModal={onShowViewModal}
+                />
             ))}
         </div>
     );
 };
 
-// Componente: CallsPage
-const CallsPage = () => {
+const Chamados = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState(null);
+    const [modalWidth, setModalWidth] = useState(450);
+
     const [currentPage, setCurrentPage] = useState(1);
     const totalCallsCount = 127;
     const pageSize = 3;
 
     const allCalls = [
         { id: 'CH001', status: 'Em Andamento', clientName: 'João Silva', phone: '(11) 9999-9999', car: 'Honda Civic 2020 • ABC-1234', sinistro: 'SIN2024001', insurance: 'Porto Seguro', origin: 'Rua das Flores, 123 - Centro, São Paulo/SP', destination: 'Av. Paulista, 500 - Bela Vista, São Paulo/SP', date: '2024-01-15 às 14:30', serviceType: 'Reboque', driver: 'Carlos Santos', truck: 'Guincho 01 - ABC-5678', price: 'R$ 280,00' },
-        { id: 'CH002', status: 'Aguardando', clientName: 'Maria Santos', phone: '(21) 8888-8888', car: 'Toyota Corolla 2019 • XYZ-5678', sinistro: 'SIN2024002', insurance: 'Bradesco Seguros', origin: 'Rua de Ipanema, 200 - Ipanema, Rio de Janeiro/RJ', destination: 'Rua Barata Ribeiro, 100 - Copacabana, Rio de Janeiro/RJ', date: '2024-01-15 às 15:45', serviceType: 'Socorro Mecânico', driver: '—', truck: '—', price: 'R$ 150,00' },
+        { id: 'CH002', status: 'Aguardando', clientName: 'Maria Santos', phone: '(21) 8888-8888', car: 'Toyota Corolla 2019 • XYZ-5678', sinistro: 'SIN2024002', insurance: 'Bradesco Seguros', origin: 'Rua de Ipanema, 200 - Ipanema, Rio de Janeiro/RJ', destination: 'Rua Barata Ribeiro, 100 - Copacana, Rio de Janeiro/RJ', date: '2024-01-15 às 15:45', serviceType: 'Socorro Mecânico', driver: '—', truck: '—', price: 'R$ 150,00' },
         { id: 'CH003', status: 'Finalizado', clientName: 'Pedro Oliveira', phone: '(81) 7777-7777', car: 'Ford Focus 2018 • DEF-9012', sinistro: 'SIN2024003', insurance: 'Allianz Seguros', origin: 'Av. Boa Viagem, 300 - Boa Viagem, Recife/PE', destination: 'Rua do Carmo, 50 - Centro, Recife/PE', date: '2024-01-14 às 09:15', serviceType: 'Reboque', driver: 'Ana Costa', truck: 'Guincho 02 - DEF-1234', price: 'R$ 320,00' },
     ];
 
@@ -227,10 +262,53 @@ const CallsPage = () => {
         setCurrentPage(page);
     };
 
+    // Função para abrir o modal de Ver
+    const handleShowViewModal = (callId) => {
+        const call = allCalls.find(c => c.id === callId);
+        setModalTitle(`Chamado ${callId}`);
+        setModalContent(<VerChamadoModal onCancel={handleCancel} chamadoData={call} />);
+        setModalWidth(750);
+        setIsModalOpen(true);
+    };
+
+    // Função para abrir o modal de Editar
+    const handleShowEditModal = (callId) => {
+        const call = allCalls.find(c => c.id === callId);
+        setModalTitle(`Editar Chamado ${callId}`);
+        setModalContent(<EditarChamadoFormModal onCancel={handleCancel} onSave={handleSave} call={call} />);
+        setModalWidth(900);
+        setIsModalOpen(true);
+    };
+
+    // Função para abrir o modal de Registrar Valores
+    const handleShowValuesModal = (callId) => {
+        const call = allCalls.find(c => c.id === callId);
+        setModalTitle(`Valores do Serviço - Chamado ${callId}`);
+        setModalContent(<ValoresServicoFormModal onCancel={handleCancel} onSave={handleSave} call={call} />);
+        setModalWidth(900);
+        setIsModalOpen(true);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        setModalWidth(null);
+    };
+
+    const handleSave = (values) => {
+        console.log('Valores salvos:', values);
+        setIsModalOpen(false);
+        setModalWidth(null);
+    };
+
     return (
         <div>
             <Filters />
-            <CallsList calls={currentCalls} />
+            <CallsList
+                calls={currentCalls}
+                onShowValuesModal={handleShowValuesModal}
+                onShowEditModal={handleShowEditModal}
+                onShowViewModal={handleShowViewModal}
+            />
             <div style={{ textAlign: 'right', marginTop: 24 }}>
                 <AntdPagination
                     total={totalCallsCount}
@@ -241,8 +319,18 @@ const CallsPage = () => {
                     showSizeChanger={false}
                 />
             </div>
+
+            <CustomModal
+                title={modalTitle}
+                open={isModalOpen}
+                onCancel={handleCancel}
+                footer={null}
+                width={modalWidth}
+            >
+                {modalContent}
+            </CustomModal>
         </div>
     );
 };
 
-export default CallsPage;
+export default Chamados;

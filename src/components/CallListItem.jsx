@@ -1,21 +1,22 @@
-import React from 'react';
 import { Card, Button, Typography, Space, Divider } from 'antd';
 import {
     PhoneOutlined,
     CarOutlined,
     GlobalOutlined,
     EnvironmentOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    DollarOutlined,
+    EditOutlined,
+    EyeOutlined
 } from '@ant-design/icons';
 import StatusTag from './StatusTag';
 
 const { Text } = Typography;
 
-const CallListItem = ({ call }) => {
+const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
     return (
         <Card style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                {/* Seção de Informações do Cliente */}
                 <div style={{ flex: 1, marginRight: 24 }}>
                     <Space style={{ marginBottom: 8 }}>
                         <Text strong>{call.id}</Text>
@@ -34,29 +35,27 @@ const CallListItem = ({ call }) => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
                         <GlobalOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-                        <Text>Sinistro: {call.sinistro}</Text>
+                        <Text strong>Sinistro: </Text>
+                        <Text>{call.sinistro}</Text>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <GlobalOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-                        <Text>Seguradora: {call.insurance}</Text>
+                        <Text strong>Seguradora: </Text>
+                        <Text>{call.insurance}</Text>
                     </div>
                 </div>
-
-                {/* Linha Vertical de Divisão */}
                 <Divider type="vertical" style={{ height: 'auto', margin: '0 24px' }} />
-
-                {/* Seção de Detalhes da Viagem */}
                 <div style={{ flex: 1, marginRight: 24 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
                         <EnvironmentOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-                        <Text>Origem:</Text>
+                        <Text strong>Origem:</Text>
                     </div>
                     <div style={{ marginLeft: 24, marginBottom: 8 }}>
                         <Text>{call.origin}</Text>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
                         <EnvironmentOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-                        <Text>Destino:</Text>
+                        <Text strong>Destino:</Text>
                     </div>
                     <div style={{ marginLeft: 24, marginBottom: 8 }}>
                         <Text>{call.destination}</Text>
@@ -67,11 +66,7 @@ const CallListItem = ({ call }) => {
                     </div>
                     <Button type="default" style={{ marginTop: 8 }}>{call.serviceType}</Button>
                 </div>
-
-                {/* Linha Vertical de Divisão */}
                 <Divider type="vertical" style={{ height: 'auto', margin: '0 24px' }} />
-
-                {/* Seção de Ações */}
                 <div style={{ flex: 1, textAlign: 'right' }}>
                     <div style={{ marginBottom: 8 }}>
                         <Text>Motorista:</Text>
@@ -86,9 +81,17 @@ const CallListItem = ({ call }) => {
                     <div style={{ marginBottom: 16 }}>
                         <Text strong>{call.price}</Text>
                     </div>
+
                     <Space>
-                        <Button>Ver</Button>
-                        <Button type="primary">Editar</Button>
+                        <Button icon={<EyeOutlined />} onClick={() => onShowViewModal(call.id)}>Ver</Button>
+                        <Button icon={<EditOutlined />} onClick={() => onShowEditModal(call.id)}>Editar</Button>
+                        <Button
+                            type="primary"
+                            icon={<DollarOutlined />}
+                            onClick={() => onShowValuesModal(call.id)}
+                        >
+                            Valores
+                        </Button>
                     </Space>
                 </div>
             </div>
