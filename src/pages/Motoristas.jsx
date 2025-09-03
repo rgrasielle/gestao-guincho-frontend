@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Layout, Button, Typography, Space, Row, Col, Card, Tag, Empty, Form, Input, Select } from 'antd';
-import { UserOutlined, EditOutlined, TeamOutlined, PlusOutlined } from '@ant-design/icons';
+import { Layout, Button, Typography, Space, Row, Col, Card, Tag, Empty, Form, Input, Select, Divider } from 'antd';
+import { UserOutlined, EditOutlined, TeamOutlined, SyncOutlined } from '@ant-design/icons';
+
 import CustomModal from '../components/CustomModal';
 import MotoristaFormModal from '../components/MotoristaFormModal';
+import UpdateDriverAvailabilityModal from '../components/UpdateDriverAvailabilityModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -30,54 +32,66 @@ const MotoristaGuinchoStatusTag = ({ status }) => {
 };
 
 // Componente: DriverCard
-const DriverCard = ({ driver, onEdit }) => {
+const DriverCard = ({ driver, onEdit, onUpdateAvailability }) => {
     return (
         <Card
             hoverable
             style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #f0f0f0' }}
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <Space style={{ marginBottom: 8 }}>
-                        <UserOutlined style={{ marginRight: 4, color: '#1677ff' }} />
-                        <Text strong>{driver.nomeCompleto}</Text>
-                        <MotoristaGuinchoStatusTag status={driver.disponibilidade} />
-                    </Space>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>CPF:</b> {driver.cpf}
-                        </Text>
-                    </div>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>CNH:</b> {driver.cnh}
-                        </Text>
-                    </div>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>Telefone:</b> {driver.telefone}
-                        </Text>
-                    </div>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>E-mail:</b> {driver.email}
-                        </Text>
-                    </div>
+            <div>
+                <Space style={{ marginBottom: 8 }}>
+                    <UserOutlined style={{ marginRight: 4, color: '#1677ff' }} />
+                    <Text strong>{driver.nomeCompleto}</Text>
+                    <MotoristaGuinchoStatusTag status={driver.disponibilidade} />
+                </Space>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>CPF:</b> {driver.cpf}
+                    </Text>
                 </div>
-                <Button
-                    type="default"
-                    icon={<EditOutlined />}
-                    onClick={() => onEdit(driver.id)}
-                >
-                    Editar
-                </Button>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>CNH:</b> {driver.cnh}
+                    </Text>
+                </div>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>Telefone:</b> {driver.telefone}
+                    </Text>
+                </div>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>E-mail:</b> {driver.email}
+                    </Text>
+                </div>
+            </div>
+
+            <Divider style={{ margin: '16px 0' }} />
+
+            <div style={{ textAlign: 'right' }}>
+                <Space>
+                    <Button
+                        type="default"
+                        icon={<EditOutlined />}
+                        onClick={() => onEdit(driver.id)}
+                    >
+                        Editar
+                    </Button>
+                    <Button
+                        type="default"
+                        icon={<SyncOutlined />}
+                        onClick={() => onUpdateAvailability(driver.id)}
+                    >
+                        Atualizar Disponibilidade
+                    </Button>
+                </Space>
             </div>
         </Card>
     );
 };
 
 // Componente: DriverList
-const DriverList = ({ drivers, onEdit }) => {
+const DriverList = ({ drivers, onEdit, onUpdateAvailability }) => {
     if (!drivers || drivers.length === 0) {
         return <Empty description="Nenhum motorista cadastrado." />;
     }
@@ -85,7 +99,11 @@ const DriverList = ({ drivers, onEdit }) => {
         <Row gutter={[16, 16]}>
             {drivers.map((driver) => (
                 <Col key={driver.id} xs={24} sm={24} md={12} lg={12}>
-                    <DriverCard driver={driver} onEdit={onEdit} />
+                    <DriverCard
+                        driver={driver}
+                        onEdit={onEdit}
+                        onUpdateAvailability={onUpdateAvailability}
+                    />
                 </Col>
             ))}
         </Row>
@@ -111,17 +129,25 @@ const Motoristas = () => {
         setIsModalOpen(true);
     };
 
+    // Função para editar motorista
     const handleEdit = (driverId) => {
         const driverToEdit = drivers.find(d => d.id === driverId);
-        // 👈 AQUI: passamos os dados do motorista para o modal
         showModal('Editar Motorista', <MotoristaFormModal onCancel={handleCancel} onSave={handleSave} initialData={driverToEdit} />, 450);
+    };
+
+    // Função para atualizar disponibilidade
+    const handleUpdateAvailability = (driverId) => {
+        const driverToUpdate = drivers.find(d => d.id === driverId);
+        showModal('', <UpdateDriverAvailabilityModal onCancel={handleCancel} onSave={handleSave} initialData={driverToUpdate} />, 400);
     };
 
     const handleSave = (values) => {
         console.log('Dados salvos:', values);
         if (values.id) {
+            // Lógica para atualização
             setDrivers(prevDrivers => prevDrivers.map(driver => driver.id === values.id ? values : driver));
         } else {
+            // Lógica para novo motorista
             const newDriver = { ...values, id: drivers.length + 1 };
             setDrivers(prevDrivers => [...prevDrivers, newDriver]);
         }
@@ -149,7 +175,11 @@ const Motoristas = () => {
                 </Button>
             </div>
 
-            <DriverList drivers={drivers} onEdit={handleEdit} />
+            <DriverList
+                drivers={drivers}
+                onEdit={handleEdit}
+                onUpdateAvailability={handleUpdateAvailability}
+            />
 
             <CustomModal
                 title={modalTitle}

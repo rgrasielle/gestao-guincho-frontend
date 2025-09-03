@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Space, Row, Col, Card, Typography, List, Tag } from 'antd';
 import {
     PhoneOutlined,
@@ -9,7 +9,6 @@ import {
     ClockCircleOutlined,
     TeamOutlined,
     PlusOutlined,
-    CarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,11 +62,17 @@ const StatisticCard = ({ title, value, description, icon }) => {
 };
 
 // Componente: RecentCallsList
-const RecentCallsList = ({ calls }) => {
+const RecentCallsList = ({ calls, onShowViewModal }) => {
+    const navigate = useNavigate();
+
     return (
         <Card
             title="Chamados Recentes"
-            extra={<Button type="link">Ver Todos</Button>}
+            extra={
+                <Button type="link" onClick={() => navigate('/chamados')}>
+                    Ver Todos
+                </Button>
+            }
         >
             <List
                 itemLayout="horizontal"
@@ -75,7 +80,13 @@ const RecentCallsList = ({ calls }) => {
                 renderItem={(item) => (
                     <List.Item
                         actions={[
-                            <Button type="link" key="list-loadmore-edit">Ver Detalhes</Button>
+                            <Button
+                                type="link"
+                                key="ver-detalhes"
+                                onClick={() => onShowViewModal(item.id)}
+                            >
+                                Ver Detalhes
+                            </Button>
                         ]}
                     >
                         <List.Item.Meta
@@ -125,10 +136,20 @@ const DashboardPage = () => {
         setIsModalOpen(false);
     };
 
+    // Função para abrir o formulário de cadastro de novo chamado (ChamadoForm)
     const handleNewCallClick = () => {
         navigate('/chamadoform');
     };
 
+    // Função para abrir o modal de "Ver Detalhes"
+    const handleShowViewModal = (callId) => {
+        const call = recentCalls.find(c => c.id === callId);
+        showModal(
+            `Chamado ${callId}`,
+            <VerChamadoModal chamadoData={call} />,
+            750 // Exemplo de largura
+        );
+    };
     // Dados para os cards de estatísticas (de cima)
     const topStats = [
         {
@@ -256,7 +277,7 @@ const DashboardPage = () => {
 
             {/* Seção de Chamados Recentes */}
             <div style={{ marginTop: 24 }}>
-                <RecentCallsList calls={recentCalls} />
+                <RecentCallsList calls={recentCalls} onShowViewModal={handleShowViewModal} />
             </div>
 
             {/* Nova linha de cards (de baixo) */}

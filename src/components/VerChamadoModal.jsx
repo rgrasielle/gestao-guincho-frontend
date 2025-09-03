@@ -9,9 +9,6 @@ import {
     DollarOutlined
 } from '@ant-design/icons';
 
-// Importe o StatusTag se ele for um componente separado
-// import StatusTag from './StatusTag';
-
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 

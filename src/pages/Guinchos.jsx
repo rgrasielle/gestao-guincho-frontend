@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Layout, Button, Typography, Space, Row, Col, Card, Tag, Empty, Form, Input, Select } from 'antd';
-import { TruckOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Typography, Space, Row, Col, Card, Tag, Empty, Form, Select, Divider } from 'antd';
+import { TruckOutlined, EditOutlined, SyncOutlined } from '@ant-design/icons';
+
 import CustomModal from '../components/CustomModal';
-import MotoristaFormModal from '../components/MotoristaFormModal';
 import GuinchoFormModal from '../components/GuinchoFormModal';
+import UpdateGuinchoAvailabilityModal from '../components/UpdateGuinchoAvailabilityModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -31,49 +32,63 @@ const MotoristaGuinchoStatusTag = ({ status }) => {
 };
 
 // Componente: GuinchoCard
-const GuinchoCard = ({ guincho, onEdit }) => {
+const GuinchoCard = ({ guincho, onEdit, onUpdateAvailability }) => {
     return (
         <Card
             hoverable
             style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #f0f0f0' }}
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <Space style={{ marginBottom: 8 }}>
-                        <TruckOutlined style={{ marginRight: 4, color: '#1677ff' }} />
-                        <Text strong>{guincho.modelo}</Text>
-                        <MotoristaGuinchoStatusTag status={guincho.disponibilidade} />
-                    </Space>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>Placa:</b> {guincho.placa}
-                        </Text>
-                    </div>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>Tipo:</b> {guincho.tipo}
-                        </Text>
-                    </div>
-                    <div style={{ marginLeft: 24, marginBottom: 8 }}>
-                        <Text>
-                            <b>Capacidade:</b> {guincho.capacidade} kg
-                        </Text>
-                    </div>
+            <div>
+                <Space style={{ marginBottom: 8 }}>
+                    <TruckOutlined style={{ marginRight: 4, color: '#1677ff' }} />
+                    <Text strong>{guincho.modelo}</Text>
+                    <MotoristaGuinchoStatusTag status={guincho.disponibilidade} />
+                </Space>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>Placa:</b> {guincho.placa}
+                    </Text>
                 </div>
-                <Button
-                    type="default"
-                    icon={<EditOutlined />}
-                    onClick={() => onEdit(guincho.id)}
-                >
-                    Editar
-                </Button>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>Tipo:</b> {guincho.tipo}
+                    </Text>
+                </div>
+                <div style={{ marginLeft: 24, marginBottom: 8 }}>
+                    <Text>
+                        <b>Capacidade:</b> {guincho.capacidade} kg
+                    </Text>
+                </div>
+            </div>
+
+            {/* Divisor */}
+            <Divider style={{ margin: '16px 0' }} />
+
+            {/* Botões de Ação */}
+            <div style={{ textAlign: 'right' }}>
+                <Space>
+                    <Button
+                        type="default"
+                        icon={<EditOutlined />}
+                        onClick={() => onEdit(guincho.id)}
+                    >
+                        Editar
+                    </Button>
+                    <Button
+                        type="default"
+                        icon={<SyncOutlined />}
+                        onClick={() => onUpdateAvailability(guincho.id)}
+                    >
+                        Atualizar Disponibilidade
+                    </Button>
+                </Space>
             </div>
         </Card>
     );
 };
 
 // Componente: GuinchoList
-const GuinchoList = ({ guinchos, onEdit }) => {
+const GuinchoList = ({ guinchos, onEdit, onUpdateAvailability }) => {
     if (!guinchos || guinchos.length === 0) {
         return <Empty description="Nenhum guincho cadastrado." />;
     }
@@ -81,7 +96,11 @@ const GuinchoList = ({ guinchos, onEdit }) => {
         <Row gutter={[16, 16]}>
             {guinchos.map((guincho) => (
                 <Col key={guincho.id} xs={24} sm={24} md={12} lg={12}>
-                    <GuinchoCard guincho={guincho} onEdit={onEdit} />
+                    <GuinchoCard
+                        guincho={guincho}
+                        onEdit={onEdit}
+                        onUpdateAvailability={onUpdateAvailability}
+                    />
                 </Col>
             ))}
         </Row>
@@ -108,9 +127,16 @@ const Guinchos = () => {
         setIsModalOpen(true);
     };
 
+    // Função para editar guincho
     const handleEdit = (guinchoId) => {
         const guinchoToEdit = guinchos.find(d => d.id === guinchoId);  // passa os dados do guincho para o modal
         showModal('Editar Guincho', <GuinchoFormModal onCancel={handleCancel} onSave={handleSave} initialData={guinchoToEdit} />, 450);
+    };
+
+    // Função para atualizar disponibilidade
+    const handleUpdateAvailability = (guinchoId) => {
+        const guinchoToUpdate = guinchos.find(d => d.id === guinchoId);
+        showModal('', <UpdateGuinchoAvailabilityModal onCancel={handleCancel} onSave={handleSave} initialData={guinchoToUpdate} />, 400);
     };
 
     const handleSave = (values) => {
@@ -145,7 +171,11 @@ const Guinchos = () => {
                 </Button>
             </div>
 
-            <GuinchoList guinchos={guinchos} onEdit={handleEdit} />
+            <GuinchoList
+                guinchos={guinchos}
+                onEdit={handleEdit}
+                onUpdateAvailability={handleUpdateAvailability}
+            />
 
             <CustomModal
                 title={modalTitle}

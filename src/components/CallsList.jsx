@@ -1,7 +1,7 @@
 import { Pagination } from 'antd';
 import CallListItem from './CallListItem';
 
-const CallsList = ({ calls, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
+const CallsList = ({ calls, onShowValuesModal, onShowEditModal, onShowViewModal, onShowUpdateStatusModal }) => {
     return (
         <div>
             {/* Mapeia a lista de chamados para renderizar um CallListItem para cada item */}
@@ -12,6 +12,7 @@ const CallsList = ({ calls, onShowValuesModal, onShowEditModal, onShowViewModal 
                     onShowValuesModal={onShowValuesModal}
                     onShowEditModal={onShowEditModal}
                     onShowViewModal={onShowViewModal}
+                    onShowUpdateStatusModal={onShowUpdateStatusModal}
                 />
             ))}
 

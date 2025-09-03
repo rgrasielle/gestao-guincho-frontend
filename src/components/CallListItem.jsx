@@ -7,13 +7,14 @@ import {
     CalendarOutlined,
     DollarOutlined,
     EditOutlined,
-    EyeOutlined
+    EyeOutlined,
+    SyncOutlined
 } from '@ant-design/icons';
 import StatusTag from './StatusTag';
 
 const { Text } = Typography;
 
-const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
+const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModal, onShowUpdateStatusModal }) => {
     return (
         <Card style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -85,14 +86,17 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                     <Space>
                         <Button icon={<EyeOutlined />} onClick={() => onShowViewModal(call.id)}>Ver</Button>
                         <Button icon={<EditOutlined />} onClick={() => onShowEditModal(call.id)}>Editar</Button>
+                        <Button icon={<SyncOutlined />} onClick={() => onShowUpdateStatusModal(call.id)}>Atualizar Status</Button>
+                    </Space>
+                    <div style={{ marginTop: 8 }}>
                         <Button
                             type="primary"
                             icon={<DollarOutlined />}
                             onClick={() => onShowValuesModal(call.id)}
                         >
-                            Valores
+                            Configurar Valores
                         </Button>
-                    </Space>
+                    </div>
                 </div>
             </div>
         </Card>
