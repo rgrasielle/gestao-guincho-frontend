@@ -1,17 +1,17 @@
 import React from 'react';
 import { Form, Select, Button, Space, Typography, Tag } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
-import StatusTag from './StatusTag';
+import StatusTag from '../../components/StatusTag';
 
 const { Title, Text } = Typography;
 const { Item } = Form;
 const { Option } = Select;
 
-const UpdateCallStatusModal = ({ onCancel, onSave, callData }) => {
+const UpdateCallStatusModal = ({ onCancel, onSave, chamadoData }) => {
     const [form] = Form.useForm();
 
     const handleFinish = (values) => {
-        onSave({ ...values, id: callData.id });
+        onSave({ ...values, id: chamadoData.id });
     };
 
     return (
@@ -20,13 +20,13 @@ const UpdateCallStatusModal = ({ onCancel, onSave, callData }) => {
                 <SyncOutlined style={{ marginRight: 8 }} />
                 Atualizar Status do Chamado
             </Title>
-            <Text type="secondary">Altere o status do chamado {callData.id}</Text>
+            <Text type="secondary">Altere o status do chamado {chamadoData.id}</Text>
 
             <div style={{ marginTop: 24, marginBottom: 24 }}>
                 <Text strong style={{ marginBottom: 8, display: 'block' }}>
                     Status Atual
                 </Text>
-                <StatusTag status={callData.status} />
+                <StatusTag status={chamadoData.status} />
             </div>
 
             <Item

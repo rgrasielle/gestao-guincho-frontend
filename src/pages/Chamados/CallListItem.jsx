@@ -10,7 +10,7 @@ import {
     EyeOutlined,
     SyncOutlined
 } from '@ant-design/icons';
-import StatusTag from './StatusTag';
+import StatusTag from '../../components/StatusTag';
 
 const { Text } = Typography;
 
@@ -86,7 +86,7 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                     <Space>
                         <Button icon={<EyeOutlined />} onClick={() => onShowViewModal(call.id)}>Ver</Button>
                         <Button icon={<EditOutlined />} onClick={() => onShowEditModal(call.id)}>Editar</Button>
-                        <Button icon={<SyncOutlined />} onClick={() => onShowUpdateStatusModal(call.id)}>Atualizar Status</Button>
+                        <Button icon={<SyncOutlined />} onClick={onShowUpdateStatusModal}>Atualizar Status</Button>
                     </Space>
                     <div style={{ marginTop: 8 }}>
                         <Button

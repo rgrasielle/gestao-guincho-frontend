@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Space, Row, Col, Card, Typography, List, Tag } from 'antd';
+import { Button, Space, Row, Col, Typography } from 'antd';
 import {
     PhoneOutlined,
     TruckOutlined,
@@ -12,106 +12,17 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-// Importar os novos componentes
-import CustomModal from '../components/CustomModal';
-import MotoristaFormModal from '../components/MotoristaFormModal';
-import GuinchoFormModal from '../components/GuinchoFormModal';
-import ValoresFormModal from '../components/ValoresFixosFormModal ';
+import CustomModal from '../../components/CustomModal';
+import MotoristaFormModal from '../../components/MotoristaFormModal';
+import GuinchoFormModal from '../../components/GuinchoFormModal';
+import ValoresFixosFormModal from './ValoresFixosFormModal ';
+
+// Componentes exclusivos da página Dashboard
+import StatisticCard from './StatisticCard';
+import RecentCallsList from './RecentCallsList';
 
 const { Title, Text } = Typography;
 
-// Componente: StatusTag
-const StatusTag = ({ status }) => {
-    let color = 'default';
-    let text = status;
-
-    switch (status) {
-        case 'Aberto':
-            color = 'processing';
-            break;
-        case 'Em andamento':
-            color = 'warning';
-            break;
-        case 'Finalizado':
-            color = 'success';
-            break;
-        default:
-            color = 'default';
-            break;
-    }
-
-    return <Tag color={color}>{text}</Tag>;
-};
-
-// Componente: StatisticCard
-const StatisticCard = ({ title, value, description, icon }) => {
-    return (
-        <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Title level={4} style={{ margin: 0 }}>
-                    {title}
-                </Title>
-                {icon}
-            </div>
-            <Title level={2} style={{ margin: '12px 0 4px 0' }}>
-                {value}
-            </Title>
-            <Text type="secondary">{description}</Text>
-        </Card>
-    );
-};
-
-// Componente: RecentCallsList
-const RecentCallsList = ({ calls, onShowViewModal }) => {
-    const navigate = useNavigate();
-
-    return (
-        <Card
-            title="Chamados Recentes"
-            extra={
-                <Button type="link" onClick={() => navigate('/chamados')}>
-                    Ver Todos
-                </Button>
-            }
-        >
-            <List
-                itemLayout="horizontal"
-                dataSource={calls}
-                renderItem={(item) => (
-                    <List.Item
-                        actions={[
-                            <Button
-                                type="link"
-                                key="ver-detalhes"
-                                onClick={() => onShowViewModal(item.id)}
-                            >
-                                Ver Detalhes
-                            </Button>
-                        ]}
-                    >
-                        <List.Item.Meta
-                            title={
-                                <Space>
-                                    <Text strong>{item.id}</Text>
-                                    <StatusTag status={item.status} />
-                                    <Text type="secondary">{item.time}</Text>
-                                </Space>
-                            }
-                            description={
-                                <div>
-                                    <Text strong>{item.clientName}</Text> • {item.car} <br />
-                                    <Text type="secondary">{item.address}</Text>
-                                </div>
-                            }
-                        />
-                    </List.Item>
-                )}
-            />
-        </Card>
-    );
-};
-
-// Componente: DashboardPage
 const DashboardPage = () => {
     // 1. Estado para controlar o modal
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -255,7 +166,7 @@ const DashboardPage = () => {
                 <Button
                     size="large"
                     icon={<DollarOutlined />}
-                    onClick={() => showModal("Configurar Valores Fixos", <ValoresFormModal onCancel={handleCancel} onSave={handleSave} />)}
+                    onClick={() => showModal("Configurar Valores Fixos", <ValoresFixosFormModal onCancel={handleCancel} onSave={handleSave} />)}
                 >
                     Configurar Valores Fixos
                 </Button>

@@ -3,7 +3,7 @@ import { DollarOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-const ValoresFormModal = ({ onCancel, onSave }) => {
+const ValoresFixosFormModal = ({ onCancel, onSave }) => {
     const [form] = Form.useForm();
 
     const handleFinish = (values) => {
@@ -121,4 +121,4 @@ const ValoresFormModal = ({ onCancel, onSave }) => {
     );
 };
 
-export default ValoresFormModal;
+export default ValoresFixosFormModal;

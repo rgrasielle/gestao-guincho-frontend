@@ -1,6 +1,5 @@
-import React from 'react';
 import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker } from 'antd';
-import { LeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { LeftOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const { Header, Content } = Layout;

@@ -1,20 +1,20 @@
 import React from 'react';
 import { Form, Select, Button, Space, Typography } from 'antd';
-import { SyncOutlined, UserOutlined } from '@ant-design/icons';
-import MotoristaGuinchoStatusTag from './MotoristaGuinchoStatusTag';
+import { SyncOutlined, TruckOutlined } from '@ant-design/icons';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 const { Title, Text } = Typography;
 const { Item } = Form;
 const { Option } = Select;
 
-const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
+const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
 
     // Use uma verificação defensiva para evitar o erro se initialData for undefined
-    const driverData = initialData || {};
+    const guinchoData = initialData || {};
 
     const handleFinish = (values) => {
-        onSave({ ...values, id: driverData.id });
+        onSave({ ...values, id: guinchoData.id });
     };
 
     return (
@@ -23,16 +23,16 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                 <SyncOutlined style={{ marginRight: 8 }} />
                 Atualizar Disponibilidade
             </Title>
-            <Text type="secondary">Altere a disponibilidade do motorista:</Text>
+            <Text type="secondary">Altere a disponibilidade do guincho:</Text>
 
             <div style={{ marginTop: 24, marginBottom: 24 }}>
                 <div style={{ background: '#fbfcfc', padding: '16px', borderRadius: '4px' }}>
                     <Space size="large">
-                        <UserOutlined style={{ marginRight: 4, color: '#1677ff', fontSize: 24 }} />
+                        <TruckOutlined style={{ marginRight: 4, color: '#1677ff', fontSize: 24 }} />
                         <div>
-                            <Text strong>{driverData.nomeCompleto}</Text>
+                            <Text strong>{guinchoData.modelo}</Text>
                             <br />
-                            <Text>CNH: {driverData.cnh}</Text>
+                            <Text>Placa: {guinchoData.placa}</Text>
                         </div>
                     </Space>
                 </div>
@@ -43,7 +43,7 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                     Disponibilidade Atual
                 </Text>
 
-                <MotoristaGuinchoStatusTag status={driverData.disponibilidade} />
+                <MotoristaGuinchoStatusTag status={guinchoData.disponibilidade} />
             </div>
 
             <Item
@@ -73,4 +73,4 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
     );
 };
 
-export default UpdateDriverAvailabilityModal;
+export default UpdateGuinchoAvailabilityModal;

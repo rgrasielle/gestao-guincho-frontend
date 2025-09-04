@@ -1,5 +1,4 @@
-import React from 'react';
-import { Tabs, Typography, Row, Col, Divider, Space, Tag } from 'antd';
+import { Tabs, Spin, Typography, Row, Col, Divider, Tag } from 'antd';
 import {
     UserOutlined,
     CarOutlined,
@@ -8,6 +7,8 @@ import {
     ClockCircleOutlined,
     DollarOutlined
 } from '@ant-design/icons';
+
+import { useChamadoById } from "../../hooks/useChamadoById";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -501,15 +502,23 @@ const ValoresServicoContent = ({ chamadoData }) => (
     </>
 );
 
-
 const VerChamadoModal = ({ chamadoData }) => {
+
+    const { data: chamadoCompleto, isLoading } = useChamadoById(chamadoData.id);
+
+    // Se estiver carregando, mostra um spinner
+    if (isLoading) return <Spin tip="Carregando detalhes do chamado..." />;
+
+    // Se a API trouxe dados, usa eles; senão, usa o que veio da lista
+    const dados = chamadoCompleto || chamadoData;
+
     return (
         <Tabs defaultActiveKey="1">
             <TabPane tab="Dados do Chamado" key="1">
-                <DadosChamadoContent chamadoData={chamadoData} />
+                <DadosChamadoContent chamadoData={dados} />
             </TabPane>
             <TabPane tab="Valores do Serviço" key="2">
-                <ValoresServicoContent chamadoData={chamadoData} />
+                <ValoresServicoContent chamadoData={dados} />
             </TabPane>
         </Tabs>
     );

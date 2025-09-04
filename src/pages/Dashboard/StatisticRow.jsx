@@ -1,6 +1,3 @@
-// src/components/StatisticRow.jsx
-
-import React from 'react';
 import { Row, Col } from 'antd';
 import { PhoneOutlined, ClockCircleOutlined, CheckCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';

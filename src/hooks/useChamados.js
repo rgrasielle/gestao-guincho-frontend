@@ -5,22 +5,29 @@ import chamadosService from "../services/chamadosService";
  * Listar chamados com filtros e paginação
  * @param {Object} filtros - filtros opcionais { sinistro, placa, status, page, size }
  */
-export function useChamados(filtros) {
+export function useChamados(filtros = {}) {
+    const { page = 0, size = 10, ...rest } = filtros;
     return useQuery({
-        queryKey: ["chamados", filtros], // cache separado por filtros
+        queryKey: ["chamados", { page, size, ...rest }], // cache separado por página e filtros
         queryFn: () =>
-            chamadosService.listar(filtros).then((res) => res.data), // retorna dados da API
-        keepPreviousData: true, // mantém lista antiga enquanto busca nova página
+            chamadosService
+                .listar({ page, size, ...rest })
+                .then((res) => res.data),
+        keepPreviousData: true, // mantém dados antigos enquanto busca a nova página
     });
 }
 
 
 // Buscar um chamado específico por ID
-export function useChamado(id) {
+export function useChamadoById(id) {
     return useQuery({
         queryKey: ["chamado", id],
-        queryFn: () => chamadosService.buscarPorId(id).then((res) => res.data),
-        enabled: !!id, // só executa se id for válido
+        queryFn: () => chamadosService.buscarPorId(id).then((res) => res.data ?? {}),
+        enabled: !!id,
+        staleTime: 1000 * 60, // 1 min
+        onError: (error) => {
+            console.error("Erro ao buscar chamado:", error);
+        },
     });
 }
 

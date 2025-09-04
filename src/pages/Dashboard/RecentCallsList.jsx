@@ -1,7 +1,6 @@
-// src/components/RecentCallsList.jsx
 
 import { Card, Button, Typography, Space, List } from 'antd';
-import StatusTag from './StatusTag'; // Importamos o componente criado anteriormente
+import StatusTag from '../../components/StatusTag';
 
 const { Text } = Typography;
 
