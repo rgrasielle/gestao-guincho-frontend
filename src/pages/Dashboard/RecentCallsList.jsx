@@ -4,11 +4,14 @@ import StatusTag from '../../components/StatusTag';
 
 const { Text } = Typography;
 
-const RecentCallsList = ({ calls }) => {
+const RecentCallsList = ({ calls, onShowAll, onShowViewModal }) => {
     return (
         <Card
             title="Chamados Recentes"
-            extra={<Button type="link">Ver Todos</Button>}
+            extra={
+                <Button type="link" onClick={onShowAll} >
+                    Ver Todos
+                </Button>}
         >
             <List
                 itemLayout="horizontal"
@@ -16,7 +19,13 @@ const RecentCallsList = ({ calls }) => {
                 renderItem={(item) => (
                     <List.Item
                         actions={[
-                            <Button type="link" key="list-loadmore-edit">Ver Detalhes</Button>
+                            <Button
+                                type="link"
+                                key="list-view-details"
+                                onClick={() => onShowViewModal(item.id)}
+                            >
+                                Ver Detalhes
+                            </Button>
                         ]}
                     >
                         <List.Item.Meta

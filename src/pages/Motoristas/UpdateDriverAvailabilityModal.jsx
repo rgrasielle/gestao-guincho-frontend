@@ -1,4 +1,3 @@
-import React from 'react';
 import { Form, Select, Button, Space, Typography } from 'antd';
 import { SyncOutlined, UserOutlined } from '@ant-design/icons';
 import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
@@ -13,6 +12,7 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
     // Use uma verificação defensiva para evitar o erro se initialData for undefined
     const driverData = initialData || {};
 
+    // Função chamada ao submeter o formulário
     const handleFinish = (values) => {
         onSave({ ...values, id: driverData.id });
     };
@@ -42,7 +42,6 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                 <Text strong style={{ marginBottom: 8, display: 'block' }}>
                     Disponibilidade Atual
                 </Text>
-
                 <MotoristaGuinchoStatusTag status={driverData.disponibilidade} />
             </div>
 

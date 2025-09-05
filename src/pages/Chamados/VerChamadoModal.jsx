@@ -8,7 +8,7 @@ import {
     DollarOutlined
 } from '@ant-design/icons';
 
-import { useChamadoById } from "../../hooks/useChamadoById";
+import { useChamadoById } from '../../hooks/useChamados';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;

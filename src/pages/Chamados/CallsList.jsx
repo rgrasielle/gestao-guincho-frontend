@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pagination, Modal, message } from 'antd';
 import CallListItem from './CallListItem';
 import UpdateCallStatusModal from './UpdateCallStatusModal';
-import { useAtualizarStatus } from '../../hooks/useAtualizarStatus';
+import { useAtualizarStatus } from '../../hooks/useChamados';
 
 const CallsList = ({ calls, onShowValuesModal, onShowEditModal, onShowViewModal }) => {
     const [selectedCall, setSelectedCall] = useState(null);

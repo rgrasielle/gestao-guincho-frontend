@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Button, Typography, Space, Divider } from 'antd';
 import { UserOutlined, EditOutlined, SyncOutlined } from '@ant-design/icons';
-import MotoristaGuinchoStatusTag from './MotoristaGuinchoStatusTag';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 const { Text } = Typography;
 

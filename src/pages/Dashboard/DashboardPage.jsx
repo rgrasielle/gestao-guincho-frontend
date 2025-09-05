@@ -16,6 +16,7 @@ import CustomModal from '../../components/CustomModal';
 import MotoristaFormModal from '../../components/MotoristaFormModal';
 import GuinchoFormModal from '../../components/GuinchoFormModal';
 import ValoresFixosFormModal from './ValoresFixosFormModal ';
+import VerChamadoModal from '../Chamados/VerChamadoModal';
 
 // Componentes exclusivos da página Dashboard
 import StatisticCard from './StatisticCard';
@@ -55,12 +56,14 @@ const DashboardPage = () => {
     // Função para abrir o modal de "Ver Detalhes"
     const handleShowViewModal = (callId) => {
         const call = recentCalls.find(c => c.id === callId);
+        if (!call) return;
+
         showModal(
             `Chamado ${callId}`,
-            <VerChamadoModal chamadoData={call} />,
-            750 // Exemplo de largura
+            <VerChamadoModal chamadoData={call} onCancel={handleCancel} />
         );
     };
+
     // Dados para os cards de estatísticas (de cima)
     const topStats = [
         {
@@ -188,7 +191,11 @@ const DashboardPage = () => {
 
             {/* Seção de Chamados Recentes */}
             <div style={{ marginTop: 24 }}>
-                <RecentCallsList calls={recentCalls} onShowViewModal={handleShowViewModal} />
+                <RecentCallsList
+                    calls={recentCalls}
+                    onShowViewModal={handleShowViewModal}
+                    onShowAll={() => navigate('/chamados')}
+                />
             </div>
 
             {/* Nova linha de cards (de baixo) */}

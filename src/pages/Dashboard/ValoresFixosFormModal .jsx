@@ -20,7 +20,7 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
         >
             <Form.Item
                 name="valorKm"
-                label={<Text strong>Valor por KM (R$)</Text>}
+                label={<Text strong>Quilometragem - Valor por KM (R$)</Text>}
                 rules={[{ required: true, message: 'Por favor, digite o valor por KM!' }]}
                 required={false}
             >
@@ -35,7 +35,7 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
 
             <Form.Item
                 name="valorSaida"
-                label={<Text strong>Valor da Saída (R$)</Text>}
+                label={<Text strong>Quilometragem - Valor da Saída (R$)</Text>}
                 rules={[{ required: true, message: 'Por favor, digite o valor da saída!' }]}
                 required={false}
             >
@@ -107,6 +107,22 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
                     style={{ width: '100%' }}
                 />
             </Form.Item>
+
+            <Form.Item
+                name="valorDiaria"
+                label={<Text strong>Valor da Diária (R$)</Text>}
+                rules={[{ required: true, message: 'Por favor, digite o valor da hora diária!' }]}
+                required={false}
+            >
+                <InputNumber
+                    min={0}
+                    step={0.01}
+                    formatter={value => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/R\$\s?|(,*)/g, '')}
+                    style={{ width: '100%' }}
+                />
+            </Form.Item>
+
             <Form.Item style={{ textAlign: 'right', marginTop: 24 }}>
                 <Space>
                     <Button onClick={onCancel}>

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Form, Input, Select, Button, Space, Typography } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -21,8 +20,8 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
         <Form
             form={form}
             layout="vertical"
-            onFinish={onSave} // onSave será chamado com os valores do formulário
-            initialValues={initialData} // Aqui os dados iniciais são preenchidos
+            onFinish={onSave} // onSave será chamado com os dados do formulário
+            initialValues={initialData} // dados iniciais para edição
         >
             <Form.Item
                 name="nomeCompleto"
