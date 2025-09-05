@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
-import { Form, Input, Select, Button, Space, Typography } from 'antd'; // 👈 Importe Typography
-import { TruckOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
+import { Form, Input, Select, Button, Space, Typography } from 'antd';
 
 const { Option } = Select;
-const { Text } = Typography; // 👈 Desestruture o componente Text
+const { Text } = Typography;
 
 const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
 
-    // useEffect para atualizar o formulário
+    // Preenche ou reseta o formulário ao abrir o modal
     useEffect(() => {
         if (initialData) {
             form.setFieldsValue(initialData);
@@ -22,7 +21,6 @@ const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
             form={form}
             layout="vertical"
             onFinish={onSave}
-            initialValues={initialData}
         >
             <Form.Item
                 name="modelo"
@@ -70,9 +68,10 @@ const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a disponibilidade">
-                    <Option value="disponivel">Disponível</Option>
-                    <Option value="em_atendimento">Em Atendimento</Option>
-                    <Option value="indisponivel">Indisponível</Option>
+                    <Option value="Disponível">Disponível</Option>
+                    <Option value="Em Atendimento">Em Atendimento</Option>
+                    <Option value="Indisponível">Indisponível</Option>
+
                 </Select>
             </Form.Item>
 

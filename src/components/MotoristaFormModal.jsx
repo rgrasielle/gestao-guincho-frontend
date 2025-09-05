@@ -21,7 +21,6 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
             form={form}
             layout="vertical"
             onFinish={onSave} // onSave será chamado com os dados do formulário
-            initialValues={initialData} // dados iniciais para edição
         >
             <Form.Item
                 name="nomeCompleto"
@@ -75,9 +74,10 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a disponibilidade">
-                    <Option value="disponivel">Disponível</Option>
-                    <Option value="em_atendimento">Em Atendimento</Option>
-                    <Option value="indisponivel">Indisponível</Option>
+                    <Option value="Disponível">Disponível</Option>
+                    <Option value="Em Atendimento">Em Atendimento</Option>
+                    <Option value="Indisponível">Indisponível</Option>
+
                 </Select>
             </Form.Item>
 

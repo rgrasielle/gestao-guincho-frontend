@@ -1,4 +1,3 @@
-import React from 'react';
 import { Form, Select, Button, Space, Typography } from 'antd';
 import { SyncOutlined, TruckOutlined } from '@ant-design/icons';
 import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
@@ -10,11 +9,8 @@ const { Option } = Select;
 const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
 
-    // Use uma verificação defensiva para evitar o erro se initialData for undefined
-    const guinchoData = initialData || {};
-
     const handleFinish = (values) => {
-        onSave({ ...values, id: guinchoData.id });
+        onSave({ ...values, id: initialData.id });
     };
 
     return (
@@ -30,9 +26,9 @@ const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                     <Space size="large">
                         <TruckOutlined style={{ marginRight: 4, color: '#1677ff', fontSize: 24 }} />
                         <div>
-                            <Text strong>{guinchoData.modelo}</Text>
+                            <Text strong>{initialData?.modelo}</Text>
                             <br />
-                            <Text>Placa: {guinchoData.placa}</Text>
+                            <Text>Placa: {initialData?.placa}</Text>
                         </div>
                     </Space>
                 </div>
@@ -43,7 +39,7 @@ const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                     Disponibilidade Atual
                 </Text>
 
-                <MotoristaGuinchoStatusTag status={guinchoData.disponibilidade} />
+                <MotoristaGuinchoStatusTag status={initialData?.disponibilidade} />
             </div>
 
             <Item
@@ -53,9 +49,9 @@ const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a nova disponibilidade">
-                    <Option value="Disponível">Disponível</Option>
-                    <Option value="Em Atendimento">Em Atendimento</Option>
-                    <Option value="Indisponível">Indisponível</Option>
+                    <Option value="disponivel">Disponível</Option>
+                    <Option value="em_atendimento">Em Atendimento</Option>
+                    <Option value="indisponivel">Indisponível</Option>
                 </Select>
             </Item>
 

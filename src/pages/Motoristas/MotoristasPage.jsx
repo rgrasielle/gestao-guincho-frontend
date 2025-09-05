@@ -15,7 +15,6 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { Item } = Form;
 
-
 const MotoristasPage = () => {
 
     const { drivers, isLoading, criarMotorista, atualizarMotorista, atualizarDisponibilidadeMotorista } = useMotoristas();
@@ -80,9 +79,7 @@ const MotoristasPage = () => {
         }
     };
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
+    const handleCancel = () => setIsModalOpen(false);
 
     return (
         <div style={{ padding: 10, minHeight: '100vh', background: '#fff' }}>
