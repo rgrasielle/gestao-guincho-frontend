@@ -1,17 +1,54 @@
-import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker } from 'antd';
+import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, notification } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { MaskedInput } from 'antd-mask-input';
+
+import { useCriarChamado } from '../../hooks/useChamados';
+import { useMotoristas } from '../../hooks/useMotoristas';
+import { useGuinchos } from '../../hooks/useGuinchos';
+import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const ChamadoForm = () => {
+
     const [form] = Form.useForm();
+    const navigate = useNavigate();
+
+    // Chamada do hook de mutação
+    const { mutate: criarChamado } = useCriarChamado();
+
+    // Chamada dos hooks para buscar os dados dos selects
+    const { data: motoristas, isLoading: loadingMotoristas } = useMotoristas();
+    const { data: guinchos, isLoading: loadingGuinchos } = useGuinchos();
+
+    const handleKeyDown = useEnterToNavigate();
 
     const handleFinish = (values) => {
-        console.log('Dados do chamado:', values);
-        // Lógica para salvar o chamado
+        // Converte horaServico do TimePicker para string "HH:mm:ss"
+        if (values.servico && values.servico.hora) {
+            values.servico.hora = values.servico.hora.format('HH:mm:ss');
+        }
+
+        criarChamado(values, {
+            onSuccess: () => {
+                notification.success({
+                    message: 'Sucesso',
+                    description: 'Chamado criado com sucesso!',
+                    placement: 'topRight',
+                });
+                navigate('/chamados');
+            },
+            onError: () => {
+                notification.error({
+                    message: 'Erro',
+                    description: 'Ocorreu um erro ao criar o chamado.',
+                    placement: 'topRight',
+                });
+            }
+        });
     };
 
     return (
@@ -28,9 +65,6 @@ const ChamadoForm = () => {
                             Novo Chamado
                         </Title>
                     </div>
-                    <Button type="primary" size="large">
-                        Salvar Chamado
-                    </Button>
                 </div>
             </Header>
 
@@ -39,6 +73,7 @@ const ChamadoForm = () => {
                     form={form}
                     layout="vertical"
                     onFinish={handleFinish}
+                    onKeyDown={handleKeyDown}
                 >
                     {/* Seção 1: Dados do Cliente */}
                     <Card style={{ marginBottom: 24 }} title={<Title level={4}>Dados do Cliente</Title>}>
@@ -50,14 +85,20 @@ const ChamadoForm = () => {
                             </Col>
                             <Col span={12}>
                                 <Form.Item name={['cliente', 'cpfCnpj']} label={<Text strong>CPF/CNPJ</Text>}>
-                                    <Input placeholder="000.000.000-00" />
+                                    <MaskedInput
+                                        mask={[
+                                            { mask: '000.000.000-00' },
+                                            { mask: '00.000.000/0000-00' }
+                                        ]}
+                                        placeholder="Digite o CPF ou CNPJ"
+                                    />
                                 </Form.Item>
                             </Col>
                         </Row>
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item name={['cliente', 'telefone']} label={<Text strong>Telefone</Text>}>
-                                    <Input placeholder="(11) 9999-9999" />
+                                    <MaskedInput mask="(00) 00000-0000" placeholder="(11) 99999-9999" />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -73,13 +114,6 @@ const ChamadoForm = () => {
                                 </Form.Item>
                             </Col>
                         </Row>
-                        <Row>
-                            <Col span={24}>
-                                <Form.Item name={['cliente', 'observacoes']} label={<Text strong>Campo de Observações</Text>}>
-                                    <Input.TextArea placeholder="Observações gerais do chamado..." autoSize={{ minRows: 2, maxRows: 6 }} />
-                                </Form.Item>
-                            </Col>
-                        </Row>
                     </Card>
 
                     {/* Seção 2: Dados do Veículo */}
@@ -87,24 +121,24 @@ const ChamadoForm = () => {
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item name={['veiculo', 'modelo']} label={<Text strong>Modelo</Text>}>
-                                    <Input placeholder="Ex: Honda Civic" />
+                                    <Input placeholder="Modelo do veículo" />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
                                 <Form.Item name={['veiculo', 'ano']} label={<Text strong>Ano</Text>}>
-                                    <Input placeholder="2020" />
+                                    <Input placeholder="Ano do veículo" />
                                 </Form.Item>
                             </Col>
                         </Row>
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item name={['veiculo', 'cor']} label={<Text strong>Cor</Text>}>
-                                    <Input placeholder="Branco" />
+                                    <Input placeholder="Cor do veículo" />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
                                 <Form.Item name={['veiculo', 'placa']} label={<Text strong>Placa</Text>}>
-                                    <Input placeholder="ABC-1234" />
+                                    <Input placeholder="ABC1234" />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -124,7 +158,7 @@ const ChamadoForm = () => {
                                 <Row gutter={16}>
                                     <Col span={24}>
                                         <Form.Item name={['origem', 'cep']} label={<Text strong>CEP</Text>}>
-                                            <Input placeholder="00000-000" />
+                                            <MaskedInput mask="00000-000" placeholder="00000-000" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -166,7 +200,7 @@ const ChamadoForm = () => {
                                 <Row gutter={16}>
                                     <Col span={24}>
                                         <Form.Item name={['destino', 'cep']} label={<Text strong>CEP</Text>}>
-                                            <Input placeholder="00000-000" />
+                                            <MaskedInput mask="00000-000" placeholder="00000-000" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -210,7 +244,7 @@ const ChamadoForm = () => {
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item name={['servico', 'seguradora']} label={<Text strong>Seguradora</Text>}>
-                                    <Select placeholder="Selecione a seguradora" />
+                                    <Input placeholder="Seguradora" />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -219,49 +253,68 @@ const ChamadoForm = () => {
                                 </Form.Item>
                             </Col>
                         </Row>
+
                         <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item name={['servico', 'dataAcionamento']} label={<Text strong>Data do Acionamento</Text>}>
-                                    <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                            <Col span={8}>
+                                <Form.Item name={['servico', 'dataServico']} label={<Text strong>Data do Serviço</Text>}>
+                                    <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} placeholder="Selecionar data" />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
-                                <Form.Item name={['servico', 'horaAcionamento']} label={<Text strong>Hora</Text>}>
-                                    <TimePicker format="HH:mm" style={{ width: '100%' }} />
+                            <Col span={8}>
+                                <Form.Item name={['servico', 'hora']} label={<Text strong>Hora</Text>}>
+                                    <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Selecionar hora" />
                                 </Form.Item>
                             </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
+                            <Col span={8}>
                                 <Form.Item name={['servico', 'tipoServico']} label={<Text strong>Tipo de Serviço</Text>}>
-                                    <Select placeholder="Selecione o tipo de serviço" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name={['servico', 'guincho']} label={<Text strong>Veículo (Atribuir Guincho)</Text>}>
-                                    <Select placeholder="Selecione o guincho" />
+                                    <Input placeholder="Ex: reboque, socorro mecânico, chaveiro..." />
                                 </Form.Item>
                             </Col>
                         </Row>
+
                         <Row gutter={24}>
                             <Col span={12}>
-                                <Form.Item name={['servico', 'motorista']} label={<Text strong>Prestador (Motorista Responsável)</Text>}>
-                                    <Select placeholder="Selecione o motorista" />
+                                <Form.Item name={['servico', 'motoristaId']} label={<Text strong>Prestador (Motorista Responsável)</Text>}>
+                                    <Select placeholder="Selecione o motorista" loading={loadingMotoristas}>
+                                        {(motoristas || []).map(motorista => (
+                                            <Option key={motorista.id} value={motorista.id}>
+                                                {motorista.nome}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name={['servico', 'guinchoId']} label={<Text strong>Veículo (Atribuir Guincho)</Text>}>
+                                    <Select placeholder="Selecione o guincho" loading={loadingGuinchos}>
+                                        {(guinchos || []).map(guincho => (
+                                            <Option key={guincho.id} value={guincho.id}>
+                                                {`${guincho.modelo} - ${guincho.placa}`}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col span={24}>
+                                <Form.Item name={['cliente', 'observacoes']} label={<Text strong>Campo de Observações</Text>}>
+                                    <Input.TextArea placeholder="Observações gerais do chamado..." autoSize={{ minRows: 2, maxRows: 6 }} />
                                 </Form.Item>
                             </Col>
                         </Row>
                     </Card>
 
-                    {/* Botões de Ação */}
+                    {/* Botões */}
                     <div style={{ textAlign: 'right', marginTop: 24 }}>
-                        <Button style={{ marginRight: 8 }}>Cancelar</Button>
+                        <Button style={{ marginRight: 8 }} onClick={() => navigate('/chamados')}>Cancelar</Button>
                         <Button type="primary" htmlType="submit">
                             Salvar Chamado
                         </Button>
                     </div>
                 </Form>
             </Content>
-        </Layout>
+        </Layout >
     );
 };
 

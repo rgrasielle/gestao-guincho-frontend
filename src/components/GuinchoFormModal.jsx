@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import { Form, Input, Select, Button, Space, Typography } from 'antd';
 
+import { useEnterToNavigate } from '../hooks/useEnterToNavigate';
+
 const { Option } = Select;
 const { Text } = Typography;
 
 const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
+
+    const handleKeyDown = useEnterToNavigate();
 
     // Preenche ou reseta o formulário ao abrir o modal
     useEffect(() => {
@@ -21,6 +25,7 @@ const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
             form={form}
             layout="vertical"
             onFinish={onSave}
+            onKeyDown={handleKeyDown}
         >
             <Form.Item
                 name="modelo"
@@ -37,25 +42,20 @@ const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
                 rules={[{ required: true, message: 'Por favor, digite a placa!' }]}
                 required={false}
             >
-                <Input placeholder="ABC-1234" />
+                <Input placeholder="ABC1234" />
             </Form.Item>
 
             <Form.Item
                 name="tipo"
                 label={<Text strong>Tipo</Text>}
-                rules={[{ required: true, message: 'Por favor, selecione o tipo!' }]}
                 required={false}
             >
-                <Select placeholder="Selecione o tipo">
-                    <Option value="reboque">Reboque</Option>
-                    <Option value="plataforma">Plataforma</Option>
-                </Select>
+                <Input placeholder="Ex: Reboque, Plataforma..." />
             </Form.Item>
 
             <Form.Item
                 name="capacidade"
                 label={<Text strong>Capacidade (toneladas)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite a capacidade!' }]}
                 required={false}
             >
                 <Input placeholder="Ex: 3.5" />
@@ -68,9 +68,9 @@ const GuinchoFormModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a disponibilidade">
-                    <Option value="Disponível">Disponível</Option>
-                    <Option value="Em Atendimento">Em Atendimento</Option>
-                    <Option value="Indisponível">Indisponível</Option>
+                    <Option value="DISPONIVEL">Disponível</Option>
+                    <Option value="EM_ATENDIMENTO">Em Atendimento</Option>
+                    <Option value="INDISPONIVEL">Indisponível</Option>
 
                 </Select>
             </Form.Item>

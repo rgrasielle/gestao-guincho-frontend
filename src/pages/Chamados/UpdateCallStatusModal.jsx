@@ -1,4 +1,3 @@
-import React from 'react';
 import { Form, Select, Button, Space, Typography, Tag } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import StatusTag from '../../components/StatusTag';
@@ -11,7 +10,7 @@ const UpdateCallStatusModal = ({ onCancel, onSave, chamadoData }) => {
     const [form] = Form.useForm();
 
     const handleFinish = (values) => {
-        onSave({ ...values, id: chamadoData.id });
+        onSave(chamadoData.id, values.newStatus);
     };
 
     return (
@@ -36,9 +35,9 @@ const UpdateCallStatusModal = ({ onCancel, onSave, chamadoData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione o novo status">
-                    <Option value="Aberto">Aberto</Option>
-                    <Option value="Em andamento">Em andamento</Option>
-                    <Option value="Finalizado">Finalizado</Option>
+                    <Option value="ABERTO">Aberto</Option>
+                    <Option value="EM_ANDAMENTO">Em andamento</Option>
+                    <Option value="FINALIZADO">Finalizado</Option>
                 </Select>
             </Item>
 

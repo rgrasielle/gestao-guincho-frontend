@@ -5,6 +5,7 @@ import { Outlet } from "react-router-dom";
 
 const { Content } = Layout;
 
+// Junta Sidebar + Header + Content
 const AppLayout = () => {
     return (
         <Layout style={{ minHeight: "100vh" }}>

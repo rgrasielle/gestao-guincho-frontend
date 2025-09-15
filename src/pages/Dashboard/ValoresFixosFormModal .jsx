@@ -1,13 +1,26 @@
+import { useEffect } from 'react';
 import { Form, InputNumber, Button, Space, Typography } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
 
+import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
+
 const { Text } = Typography;
 
-const ValoresFixosFormModal = ({ onCancel, onSave }) => {
+// Preenche ou reseta o formulário ao abrir o modal
+const ValoresFixosFormModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
 
+    const handleKeyDown = useEnterToNavigate();
+
+    useEffect(() => {
+        if (initialData) {
+            form.setFieldsValue(initialData);
+        } else {
+            form.resetFields();
+        }
+    }, [initialData, form]);
+
     const handleFinish = (values) => {
-        console.log('Valores configurados:', values);
         onSave(values);
     };
 
@@ -16,13 +29,12 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             form={form}
             layout="vertical"
             onFinish={handleFinish}
-            onReset={onCancel}
+            onKeyDown={handleKeyDown}
         >
+            {/* Campos de valores fixos */}
             <Form.Item
-                name="valorKm"
+                name="valorQuilometragemPorKm"
                 label={<Text strong>Quilometragem - Valor por KM (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor por KM!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -34,10 +46,8 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             </Form.Item>
 
             <Form.Item
-                name="valorSaida"
+                name="valorQuilometragemSaida"
                 label={<Text strong>Quilometragem - Valor da Saída (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor da saída!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -49,10 +59,8 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             </Form.Item>
 
             <Form.Item
-                name="acertoMotoristaKm"
+                name="valorMotoristaPorKm"
                 label={<Text strong>Acerto Motorista - Valor por KM (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor do acerto por KM!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -64,10 +72,8 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             </Form.Item>
 
             <Form.Item
-                name="acertoMotoristaSaida"
+                name="valorMotoristaSaida"
                 label={<Text strong>Acerto Motorista - Valor da Saída (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor do acerto da saída!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -81,8 +87,6 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             <Form.Item
                 name="valorHoraParada"
                 label={<Text strong>Valor da Hora Parada (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor da hora parada!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -96,8 +100,6 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             <Form.Item
                 name="valorHoraTrabalhada"
                 label={<Text strong>Valor da Hora Trabalhada (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor da hora trabalhada!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}
@@ -111,8 +113,6 @@ const ValoresFixosFormModal = ({ onCancel, onSave }) => {
             <Form.Item
                 name="valorDiaria"
                 label={<Text strong>Valor da Diária (R$)</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o valor da hora diária!' }]}
-                required={false}
             >
                 <InputNumber
                     min={0}

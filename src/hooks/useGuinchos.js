@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { guinchosService } from '../services/guinchosService';
+import guinchosService from '../services/guinchosService';
 
 /**
  * Hook para listar guinchos
  */
 export function useGuinchos() {
-    return useQuery(['guinchos'], guinchosService.listar);
+    return useQuery({
+        queryKey: ['guinchos'],
+        queryFn: () => guinchosService.listar(),
+    });
 }
 
 /**
@@ -17,7 +20,7 @@ export function useCriarGuincho() {
     return useMutation({
         mutationFn: (dados) => guinchosService.criar(dados),
         onSuccess: () => {
-            queryClient.invalidateQueries(['guinchos']);
+            queryClient.invalidateQueries({ queryKey: ['guinchos'] });
         },
     });
 }
@@ -31,7 +34,7 @@ export function useAtualizarGuincho() {
     return useMutation({
         mutationFn: ({ id, dados }) => guinchosService.atualizar(id, dados),
         onSuccess: () => {
-            queryClient.invalidateQueries(['guinchos']);
+            queryClient.invalidateQueries({ queryKey: ['guinchos'] });
         },
     });
 }
@@ -46,7 +49,7 @@ export function useAtualizarDisponibilidadeGuincho() {
         mutationFn: ({ id, disponibilidade }) =>
             guinchosService.atualizarDisponibilidade(id, disponibilidade),
         onSuccess: () => {
-            queryClient.invalidateQueries(['guinchos']);
+            queryClient.invalidateQueries({ queryKey: ['guinchos'] });
         },
     });
 }
@@ -60,7 +63,7 @@ export function useDeletarGuincho() {
     return useMutation({
         mutationFn: (id) => guinchosService.deletar(id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['guinchos']);
+            queryClient.invalidateQueries({ queryKey: ['guinchos'] });
         },
     });
 }

@@ -30,7 +30,7 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                     <Space size="large">
                         <UserOutlined style={{ marginRight: 4, color: '#1677ff', fontSize: 24 }} />
                         <div>
-                            <Text strong>{driverData.nomeCompleto}</Text>
+                            <Text strong>{driverData.nome}</Text>
                             <br />
                             <Text>CNH: {driverData.cnh}</Text>
                         </div>
@@ -52,9 +52,9 @@ const UpdateDriverAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a nova disponibilidade">
-                    <Option value="Disponível">Disponível</Option>
-                    <Option value="Em Atendimento">Em Atendimento</Option>
-                    <Option value="Indisponível">Indisponível</Option>
+                    <Option value="DISPONIVEL">Disponível</Option>
+                    <Option value="EM_ATENDIMENTO">Em Atendimento</Option>
+                    <Option value="INDISPONIVEL">Indisponível</Option>
                 </Select>
             </Item>
 

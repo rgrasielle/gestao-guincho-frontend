@@ -1,12 +1,14 @@
-// src/hooks/useMotoristas.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motoristasService } from '../services/motoristasService';
+import motoristasService from '../services/motoristasService';
 
 /**
  * Hook para listar motoristas
  */
 export function useMotoristas() {
-    return useQuery(['motoristas'], motoristasService.listar);
+    return useQuery({
+        queryKey: ['motoristas'],
+        queryFn: () => motoristasService.listar(),
+    });
 }
 
 /**
@@ -18,7 +20,7 @@ export function useCriarMotorista() {
     return useMutation({
         mutationFn: (dados) => motoristasService.criar(dados),
         onSuccess: () => {
-            queryClient.invalidateQueries(['motoristas']);
+            queryClient.invalidateQueries({ queryKey: ['motoristas'] });
         },
     });
 }
@@ -32,7 +34,7 @@ export function useAtualizarMotorista() {
     return useMutation({
         mutationFn: ({ id, dados }) => motoristasService.atualizar(id, dados),
         onSuccess: () => {
-            queryClient.invalidateQueries(['motoristas']);
+            queryClient.invalidateQueries({ queryKey: ['motoristas'] });
         },
     });
 }
@@ -47,7 +49,7 @@ export function useAtualizarDisponibilidade() {
         mutationFn: ({ id, disponibilidade }) =>
             motoristasService.atualizarDisponibilidade(id, disponibilidade),
         onSuccess: () => {
-            queryClient.invalidateQueries(['motoristas']);
+            queryClient.invalidateQueries({ queryKey: ['motoristas'] });
         },
     });
 }
@@ -61,7 +63,7 @@ export function useDeletarMotorista() {
     return useMutation({
         mutationFn: (id) => motoristasService.deletar(id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['motoristas']);
+            queryClient.invalidateQueries({ queryKey: ['motoristas'] });
         },
     });
 }

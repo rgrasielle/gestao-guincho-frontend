@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Button, Typography, Space, Divider } from 'antd';
 import { UserOutlined, EditOutlined, SyncOutlined } from '@ant-design/icons';
 import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
@@ -13,9 +12,9 @@ const DriverCard = ({ driver, onEdit, onUpdateAvailability }) => {
         >
             {/* Informações do Motorista */}
             <div>
-                <Space style={{ marginBottom: 8 }}>
-                    <UserOutlined style={{ marginRight: 4, color: '#1677ff' }} />
-                    <Text strong>{driver.nomeCompleto}</Text>
+                <Space style={{ marginBottom: 20 }} align="center">
+                    <UserOutlined style={{ fontSize: '20px', color: '#1677ff' }} />
+                    <Text style={{ fontSize: '18px', fontWeight: 600 }}>{driver.nome}</Text>
                     <MotoristaGuinchoStatusTag status={driver.disponibilidade} />
                 </Space>
                 <div style={{ marginLeft: 24, marginBottom: 8 }}>

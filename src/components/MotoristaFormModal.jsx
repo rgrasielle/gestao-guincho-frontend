@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
 import { Form, Input, Select, Button, Space, Typography } from 'antd';
+import { MaskedInput } from 'antd-mask-input';
+
+import { useEnterToNavigate } from '../hooks/useEnterToNavigate';
 
 const { Option } = Select;
 const { Text } = Typography;
 
 const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
     const [form] = Form.useForm();
+
+    const handleKeyDown = useEnterToNavigate();
 
     // useEffect para atualizar o formulário
     useEffect(() => {
@@ -21,9 +26,10 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
             form={form}
             layout="vertical"
             onFinish={onSave} // onSave será chamado com os dados do formulário
+            onKeyDown={handleKeyDown}
         >
             <Form.Item
-                name="nomeCompleto"
+                name="nome"
                 label={<Text strong>Nome Completo</Text>}
                 rules={[{ required: true, message: 'Por favor, digite o nome completo!' }]}
                 required={false} // Para remover o asterisco visual
@@ -37,7 +43,7 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
                 rules={[{ required: true, message: 'Por favor, digite o CPF!' }]}
                 required={false}
             >
-                <Input placeholder="000.000.000-00" />
+                <MaskedInput mask="000.000.000-00" placeholder="000.000.000-00" />
             </Form.Item>
 
             <Form.Item
@@ -52,16 +58,14 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
             <Form.Item
                 name="telefone"
                 label={<Text strong>Telefone</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o telefone!' }]}
                 required={false}
             >
-                <Input placeholder="(11) 99999-9999" />
+                <MaskedInput mask="(00) 00000-0000" placeholder="(00) 00000-0000" />
             </Form.Item>
 
             <Form.Item
                 name="email"
                 label={<Text strong>E-mail</Text>}
-                rules={[{ required: true, message: 'Por favor, digite o e-mail!' }]}
                 required={false}
             >
                 <Input placeholder="motorista@email.com" />
@@ -74,9 +78,9 @@ const MotoristaFormModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a disponibilidade">
-                    <Option value="Disponível">Disponível</Option>
-                    <Option value="Em Atendimento">Em Atendimento</Option>
-                    <Option value="Indisponível">Indisponível</Option>
+                    <Option value="DISPONIVEL">Disponível</Option>
+                    <Option value="EM_ATENDIMENTO">Em Atendimento</Option>
+                    <Option value="INDISPONIVEL">Indisponível</Option>
 
                 </Select>
             </Form.Item>

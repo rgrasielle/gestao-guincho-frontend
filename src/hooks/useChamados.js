@@ -85,4 +85,32 @@ export function useDeletarChamado() {
             queryClient.invalidateQueries(["chamados"]);
         },
     });
+
+
+}
+
+// --- Hooks para os Filtros ---
+
+/**
+ * Hook para buscar a lista de seguradoras únicas.
+ * staleTime: Infinity faz com que os dados nunca fiquem "velhos", 
+ * evitando buscas repetidas para dados que mudam pouco.
+ */
+export function useSeguradoras() {
+    return useQuery({
+        queryKey: ['seguradoras'],
+        queryFn: () => chamadosService.listarSeguradoras().then((res) => res.data),
+        staleTime: Infinity,
+    });
+}
+
+/**
+ * Hook para buscar a lista de tipos de serviço únicos.
+ */
+export function useTiposServico() {
+    return useQuery({
+        queryKey: ['tiposServico'],
+        queryFn: () => chamadosService.listarTiposServico().then((res) => res.data),
+        staleTime: Infinity,
+    });
 }

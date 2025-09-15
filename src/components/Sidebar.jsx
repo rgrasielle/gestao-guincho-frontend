@@ -1,4 +1,4 @@
-import { Layout, Menu } from "antd";
+import { Layout, Menu, message } from "antd";
 import {
     HomeOutlined,
     PhoneOutlined,
@@ -10,6 +10,7 @@ import {
     TeamOutlined
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 const { Sider } = Layout;
 
@@ -17,6 +18,33 @@ const Sidebar = () => {
     const location = useLocation();
     const path = location.pathname.substring(1);
     const selectedKey = path.split("/")[0] || "dashboard";
+
+    const { logout } = useAuth();
+
+    // Items do menu principal
+    const mainMenuItems = [
+        { key: "dashboard", icon: <HomeOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
+        { key: "chamados", icon: <PhoneOutlined />, label: <Link to="/chamados">Chamados</Link> },
+        { key: "motoristas", icon: <TeamOutlined />, label: <Link to="/motoristas">Motoristas</Link> },
+        { key: "guinchos", icon: <TruckOutlined />, label: <Link to="/guinchos">Guinchos</Link> },
+        /* { key: "financeiro", icon: <DollarOutlined />, label: <Link to="/financeiro">Financeiro</Link> }, */
+        { key: "relatorios", icon: <FileTextOutlined />, label: <Link to="/relatorios">Relatórios</Link> },
+    ];
+
+    // Items do menu inferior
+    const bottomMenuItems = [
+        /* { key: "configuracoes", icon: <SettingOutlined />, label: <Link to="/configuracoes">Configurações</Link> }, */
+        {
+            key: "sair",
+            icon: <LogoutOutlined />,
+            label: <span
+                onClick={() => {
+                    message.success("Você saiu da aplicação!");
+                    logout();
+                }}
+                style={{ cursor: "pointer" }}>Sair</span>
+        },
+    ];
 
     return (
         <Sider
@@ -51,27 +79,8 @@ const Sidebar = () => {
                 mode="inline"
                 selectedKeys={[selectedKey]}
                 style={{ borderRight: 0 }}
-
-            >
-                <Menu.Item key="dashboard" icon={<HomeOutlined />}>
-                    <Link to="/dashboard">Dashboard</Link>
-                </Menu.Item>
-                <Menu.Item key="chamados" icon={<PhoneOutlined />}>
-                    <Link to="/chamados">Chamados</Link>
-                </Menu.Item>
-                <Menu.Item key="motoristas" icon={<TeamOutlined />}>
-                    <Link to="/motoristas">Motoristas</Link>
-                </Menu.Item>
-                <Menu.Item key="guinchos" icon={<TruckOutlined />}>
-                    <Link to="/guinchos">Guinchos</Link>
-                </Menu.Item>
-                <Menu.Item key="financeiro" icon={<DollarOutlined />}>
-                    <Link to="/financeiro">Financeiro</Link>
-                </Menu.Item>
-                <Menu.Item key="relatorios" icon={<FileTextOutlined />}>
-                    <Link to="/relatorios">Relatórios</Link>
-                </Menu.Item>
-            </Menu>
+                items={mainMenuItems}
+            />
 
             {/* Menu inferior */}
             <Menu
@@ -83,14 +92,8 @@ const Sidebar = () => {
                     width: "100%",
                     borderTop: "1px solid #f0f0f0",
                 }}
-            >
-                <Menu.Item key="configuracoes" icon={<SettingOutlined />}>
-                    <Link to="/configuracoes">Configurações</Link>
-                </Menu.Item>
-                <Menu.Item key="sair" icon={<LogoutOutlined />}>
-                    <Link to="/sair">Sair</Link>
-                </Menu.Item>
-            </Menu>
+                items={bottomMenuItems}
+            />
         </Sider>
     );
 };

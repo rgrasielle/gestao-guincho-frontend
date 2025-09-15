@@ -4,19 +4,23 @@ const StatusTag = ({ status }) => {
     let color = 'default';
     let text = status;
 
-    // Lógica para determinar a cor e o texto com base no status
+    // Lógica para determinar a cor com base no status vindo do back-end
     switch (status) {
-        case 'Aberto':
-            color = 'processing'; // Ou uma cor hexadecimal, como #1677ff
+        case 'ABERTO':
+            color = 'processing'; // Azul do Ant Design
+            text = 'Aberto';
             break;
-        case 'Em andamento':
-            color = 'warning'; // Ou uma cor hexadecimal, como #ffc53d
+        case 'EM_ANDAMENTO':
+            color = 'warning'; // Amarelo/Laranja
+            text = 'Em Andamento';
             break;
-        case 'Finalizado':
-            color = 'success'; // Ou uma cor hexadecimal, como #52c41a
+        case 'FINALIZADO':
+            color = 'success'; // Verde
+            text = 'Finalizado';
             break;
         default:
-            color = 'default';
+            color = 'default'; // Cinza
+            text = status || 'Indefinido'; // Garante que não apareça vazio
             break;
     }
 

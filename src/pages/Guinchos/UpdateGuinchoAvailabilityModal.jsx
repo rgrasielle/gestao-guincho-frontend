@@ -49,9 +49,9 @@ const UpdateGuinchoAvailabilityModal = ({ onCancel, onSave, initialData }) => {
                 required={false}
             >
                 <Select placeholder="Selecione a nova disponibilidade">
-                    <Option value="disponivel">Disponível</Option>
-                    <Option value="em_atendimento">Em Atendimento</Option>
-                    <Option value="indisponivel">Indisponível</Option>
+                    <Option value="DISPONIVEL">Disponível</Option>
+                    <Option value="EM_ATENDIMENTO">Em Atendimento</Option>
+                    <Option value="INDISPONIVEL">Indisponível</Option>
                 </Select>
             </Item>
 

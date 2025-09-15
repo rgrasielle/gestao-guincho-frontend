@@ -9,518 +9,602 @@ import {
 } from '@ant-design/icons';
 
 import { useChamadoById } from '../../hooks/useChamados';
+import { useValoresServico } from '../../hooks/useValoresServico';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
+// Helper para formatar moeda
+const formatCurrency = (value) => {
+    if (typeof value !== 'number' && typeof value !== 'string') return "R$ --";
+    const numValue = Number(value);
+    if (isNaN(numValue)) return "R$ --";
+    return numValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
 // Componente para a seção "Dados do Chamado"
-const DadosChamadoContent = ({ chamadoData }) => (
-    <>
-        {/* Seção de Informações do Cliente */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
-            <Title level={5} style={{ margin: 0 }}><UserOutlined style={{ marginRight: 8 }} />Informações do Cliente</Title>
-        </div>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text strong>Nome:</Text>
-                <br />
-                <Text>{chamadoData.clientName}</Text>
-            </Col>
-            <Col span={12}>
-                <Text strong>CPF:</Text>
-                <br />
-                <Text>123.456.789-00</Text>
-            </Col>
-        </Row>
-        <div style={{ marginTop: 12 }}>
+const DadosChamadoContent = ({ chamadoData }) => {
+
+    // Helper para formatar data e hora
+    const callDateTime = chamadoData.dataServico && chamadoData.hora
+        ? `${dayjs(chamadoData.dataServico).format('DD/MM/YYYY')} às ${dayjs(chamadoData.hora, 'HH:mm:ss').format('HH:mm')}`
+        : 'Não informado';
+
+    // Função para formatar o telefone
+    const formatPhone = (phone) => {
+        if (!phone) return 'Não informado';
+        const cleaned = phone.replace(/\D/g, ''); // Remove tudo que não for dígito
+        if (cleaned.length === 11) {
+            return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
+        }
+        if (cleaned.length === 10) {
+            return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6)}`;
+        }
+        return phone; // Retorna o original se não for um formato conhecido
+    };
+
+    return (
+        <>
+            {/* Seção de Informações do Cliente */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
+                <Title level={5} style={{ margin: 0 }}><UserOutlined style={{ marginRight: 8 }} />Informações do Cliente</Title>
+            </div>
+            <Row gutter={[16, 16]}>
+                <Col span={12}>
+                    <Text strong>Nome:</Text><br />
+                    <Text>{chamadoData.clienteNome || 'Não informado'}</Text>
+                </Col>
+                <Col span={12}>
+                    <Text strong>CPF/CNPJ:</Text><br />
+                    <Text>{chamadoData.clienteCpfCnpj || 'Não informado'}</Text>
+                </Col>
+                <Col span={12}>
+                    <Text strong>Telefone:</Text><br />
+                    <Text>{formatPhone(chamadoData.clienteTelefone)}</Text>
+                </Col>
+                <Col span={12}>
+                    {/* <-- ADICIONADO --> */}
+                    <Text strong>E-mail:</Text><br />
+                    <Text>{chamadoData.clienteEmail || 'Não informado'}</Text>
+                </Col>
+                <Col span={24}>
+                    {/* <-- ADICIONADO --> */}
+                    <Text strong>Solicitante:</Text><br />
+                    <Text>{chamadoData.clienteSolicitante || 'Não informado'}</Text>
+                </Col>
+            </Row>
+
+            <Divider />
+
+            {/* Seção de Informações do Veículo */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
+                <Title level={5} style={{ margin: 0 }}><CarOutlined style={{ marginRight: 8 }} />Informações do Veículo</Title>
+            </div>
+            <Row gutter={[16, 16]}>
+                <Col span={8}>
+                    <Text strong>Veículo:</Text><br />
+                    <Text>{`${chamadoData.veiculoModelo || ''} ${chamadoData.veiculoAno || ''}`.trim() || 'Não informado'}</Text>
+                </Col>
+                <Col span={8}>
+                    <Text strong>Placa:</Text><br />
+                    <Text>{chamadoData.veiculoPlaca || 'Não informada'}</Text>
+                </Col>
+                <Col span={8}>
+                    <Text strong>Cor:</Text><br />
+                    <Text>{chamadoData.veiculoCor || 'Não informada'}</Text>
+                </Col>
+                <Col span={24}>
+                    <Text strong>Observações do Veículo:</Text><br />
+                    <Text>{chamadoData.veiculoObservacoes || 'Nenhuma'}</Text>
+                </Col>
+            </Row>
+
+            <Divider />
+
+            {/* Seção de Localização */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
+                <Title level={5} style={{ margin: 0 }}><EnvironmentOutlined style={{ marginRight: 8 }} />Localização</Title>
+            </div>
+            <Row gutter={[16, 16]}>
+                <Col span={12}>
+                    <Text strong>Origem:</Text><br />
+                    <Text>{chamadoData.origemFormatada || 'Não informado'}</Text><br />
+                    <Text type='secondary'>CEP: {chamadoData.origemCep || '--'}</Text>
+                </Col>
+                <Col span={12}>
+                    <Text strong>Destino:</Text><br />
+                    <Text>{chamadoData.destinoFormatado || 'Não informado'}</Text><br />
+                    <Text type='secondary'>CEP: {chamadoData.destinoCep || '--'}</Text>
+                </Col>
+            </Row>
+
+            <Divider />
+
+            {/* Seção de Informações do Sinistro */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
+                <Title level={5} style={{ margin: 0 }}><FileTextOutlined style={{ marginRight: 8 }} />Informações do Sinistro</Title>
+            </div>
             <Row gutter={16}>
                 <Col span={12}>
-                    <Text strong>Telefone:</Text>
-                    <br />
-                    <Text>{chamadoData.phone}</Text>
-                </Col>
-            </Row>
-        </div>
-
-        <Divider />
-
-        {/* Seção de Informações do Veículo */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
-            <Title level={5} style={{ margin: 0 }}><CarOutlined style={{ marginRight: 8 }} />Informações do Veículo</Title>
-        </div>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text strong>Veículo:</Text>
-                <br />
-                <Text>{chamadoData.car.split(' • ')[0]}</Text>
-            </Col>
-            <Col span={12}>
-                <Text strong>Placa:</Text>
-                <br />
-                <Text>{chamadoData.car.split(' • ')[1]}</Text>
-            </Col>
-        </Row>
-
-        <Divider />
-
-        {/* Seção de Informações do Sinistro */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
-            <Title level={5} style={{ margin: 0 }}><FileTextOutlined style={{ marginRight: 8 }} />Informações do Sinistro</Title>
-        </div>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text strong>Número do Sinistro:</Text>
-                <br />
-                <Text>{chamadoData.sinistro}</Text>
-            </Col>
-            <Col span={12}>
-                <Text strong>Seguradora:</Text>
-                <br />
-                <Text>{chamadoData.insurance}</Text>
-            </Col>
-        </Row>
-        <Row gutter={16} style={{ marginTop: 12 }}>
-            <Col span={12}>
-                <Text strong>Tipo de Serviço:</Text>
-                <br />
-                <Tag>{chamadoData.serviceType}</Tag>
-            </Col>
-            <Col span={12}>
-                <Text strong>Valor:</Text>
-                <br />
-                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.price}</Text>
-            </Col>
-        </Row>
-
-        <Divider />
-
-        {/* Seção de Localização */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
-            <Title level={5} style={{ margin: 0 }}><EnvironmentOutlined style={{ marginRight: 8 }} />Localização</Title>
-        </div>
-        <div style={{ marginBottom: 12 }}>
-            <Text strong>Origem:</Text>
-            <br />
-            <Text>{chamadoData.origin}</Text>
-        </div>
-        <div style={{ marginBottom: 12 }}>
-            <Text strong>Destino:</Text>
-            <br />
-            <Text>{chamadoData.destination}</Text>
-        </div>
-
-        <Divider />
-
-        {/* Seção de Informações do Atendimento */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
-            <Title level={5} style={{ margin: 0 }}><ClockCircleOutlined style={{ marginRight: 8 }} />Informações do Atendimento</Title>
-        </div>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text strong>Data de Acionamento:</Text>
-                <br />
-                <Text>{chamadoData.date.split(' ')[0]}</Text>
-            </Col>
-            <Col span={12}>
-                <Text strong>Hora de Acionamento:</Text>
-                <br />
-                <Text>{chamadoData.date.split(' ')[2]}</Text>
-            </Col>
-        </Row>
-        <Row gutter={16} style={{ marginTop: 12 }}>
-            <Col span={12}>
-                <Text strong>Motorista:</Text>
-                <br />
-                <Text>{chamadoData.driver}</Text>
-            </Col>
-            <Col span={12}>
-                <Text strong>Guincho:</Text>
-                <br />
-                <Text>{chamadoData.truck}</Text>
-            </Col>
-        </Row>
-    </>
-);
-
-// Componente para a seção "Valores do Serviço"
-const ValoresServicoContent = ({ chamadoData }) => (
-    <>
-        {/* Seção de Resumo Financeiro */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 18 }}>
-            <Title level={5} style={{ margin: 0 }}><DollarOutlined style={{ marginRight: 8 }} />Resumo Financeiro</Title>
-        </div>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Pagamento Quilometragem:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 62,50</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Acerto com Motorista:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 30,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Pedágios:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 45,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Patins:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 0,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Hora Parada:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 80,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Hora Trabalhada:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 120,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Diárias:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 120,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16}>
-            <Col span={12}>
-                <Text>Rodas Extras:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 0,00</Text>
-            </Col>
-        </Row>
-        <Row gutter={16} >
-            <Col span={12}>
-                <Text >Excedente:</Text>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <Text strong>R$ 50,00</Text>
-            </Col>
-        </Row>
-
-        <div style={{ background: '#e6f7ff', padding: '16px', borderRadius: '4px', textAlign: 'right', marginTop: 18 }}>
-            <Title level={4} style={{ margin: 0 }}>Total do Serviço: <span style={{ color: '#1890ff' }}>{chamadoData.price}</span></Title>
-        </div>
-
-        <Divider />
-
-        {/* Seção de Detalhamento Financeiro */}
-        <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 24 }}>
-            <Title level={5} style={{ margin: 0 }}>
-                <DollarOutlined style={{ marginRight: 8 }} />
-                Detalhamento dos Valores
-            </Title>
-        </div>
-
-        {/* Pagamento Quilometragem */}
-        <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-            <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Pagamento Quilometragem</Title>
-            <Row gutter={16}>
-                <Col span={4}>
-                    <Text strong>Quilômetros rodados:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.quilometragemRodada || '15 km'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Valor por KM:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.valorPorKm || 'R$ 2,50'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>KM Saída:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.kmSaida || '10 km'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Valor Saída:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.valorSaidaKm || 'R$ 25,00'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Total:</Text>
-                    <br />
-                    <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.totalQuilometragem || 'R$ 62,50'}</Text>
-                </Col>
-            </Row>
-        </div>
-
-        {/* Acerto com Motorista */}
-        <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-            <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Acerto com Motorista</Title>
-            <Row gutter={16}>
-                <Col span={4}>
-                    <Text strong>Quilômetros rodados:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.acertoKmRodado || '12 km'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Valor por KM:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.acertoValorPorKm || 'R$ 1,50'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>KM Saída:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.acertoKmSaida || '8 km'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Valor Saída:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.acertoValorSaida || 'R$ 12,00'}</Text>
-                </Col>
-                <Col span={5}>
-                    <Text strong>Total:</Text>
-                    <br />
-                    <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.totalAcerto || 'R$ 30,00'}</Text>
-                </Col>
-            </Row>
-        </div>
-
-        {/* Pedágios e Patins */}
-        <Row gutter={24} style={{ marginBottom: 24 }}>
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Pedágios</Title>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Sinistro:</Text>
-                            <br />
-                            <Text>{chamadoData.sinistro}</Text>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Text strong>Quantidade:</Text>
-                            <br />
-                            <Text>{chamadoData.valores?.pedagiosQuantidade || '3'}</Text>
-                        </Col>
-                        <Col span={8}>
-                            <Text strong>Valor:</Text>
-                            <br />
-                            <Text>{chamadoData.valores?.pedagiosValorUnitario || 'R$ 15,00'}</Text>
-                        </Col>
-                        <Col span={8}>
-                            <Text strong>Total:</Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.pedagiosTotal || 'R$ 45,00'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Patins</Title>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Sinistro:</Text>
-                            <br />
-                            <Text>{chamadoData.sinistro}</Text>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Valor:</Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.patinsValor || 'R$ 0,00'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-        </Row>
-
-        {/* Hora Parada e Hora Trabalhada */}
-        <Row gutter={24} style={{ marginBottom: 24 }}>
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Hora Parada</Title>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Text strong>Horas:</Text>
-                            <br />
-                            <Text>{chamadoData.valores?.horaParadaHoras || '2 horas'}</Text>
-                        </Col>
-                        <Col span={12}>
-                            <Text strong>Total: </Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.horaParadaTotal || 'R$ 80,00'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Hora Trabalhada</Title>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Text strong>Horas:</Text>
-                            <br />
-                            <Text>{chamadoData.valores?.horaTrabalhadaHoras || '4 horas'}</Text>
-                        </Col>
-                        <Col span={12}>
-                            <Text strong>Total: </Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.horaTrabalhadaTotal || 'R$ 120,00'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-        </Row>
-
-        {/* Diárias */}
-        <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-            <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Diárias</Title>
-            <Row gutter={16}>
-                <Col span={4}>
-                    <Text strong>Sinistro:</Text>
+                    <Text strong>Número do Sinistro:</Text>
                     <br />
                     <Text>{chamadoData.sinistro}</Text>
                 </Col>
-                <Col span={4}>
-                    <Text strong>Entrada:</Text>
+                <Col span={12}>
+                    <Text strong>Seguradora:</Text>
                     <br />
-                    <Text>{chamadoData.valores?.diariasEntrada || '08:00'}</Text>
-                </Col>
-                <Col span={4}>
-                    <Text strong>Saída:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.diariasSaida || '18:00'}</Text>
-                </Col>
-                <Col span={4}>
-                    <Text strong>Estadias:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.diariasEstadias || '2 dias'}</Text>
-                </Col>
-                <Col span={4}>
-                    <Text strong>Valor por dia:</Text>
-                    <br />
-                    <Text>{chamadoData.valores?.diariasValorPorDia || 'R$ 60,00'}</Text>
-                </Col>
-                <Col span={4}>
-                    <Text strong>Total: </Text>
-                    <br />
-                    <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.diariasTotal || 'R$ 120,00'}</Text>
+                    <Text>{chamadoData.seguradora}</Text>
                 </Col>
             </Row>
-        </div>
-
-        {/* Rodas Extras e Valor excedente */}
-        <Row gutter={24} style={{ marginBottom: 24 }}>
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Rodas Extras</Title>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Sinistro:</Text>
-                            <br />
-                            <Text>{chamadoData.sinistro}</Text>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Valor:</Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{chamadoData.valores?.rodasExtrasValor || 'R$ 0,00'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-
-            <Col span={12}>
-                <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
-                    <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Valor excedente</Title>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Text strong>Excedente:</Text>
-                            <br />
-                            <Text style={{ color: '#1890ff', fontWeight: 'bold' }}> {chamadoData.valores?.excedenteValor || 'R$ 50,00'}</Text>
-                        </Col>
-                        <Col span={24}>
-                            <Text strong>Observações:</Text>
-                            <br />
-                            <Text>{chamadoData.valores?.observacoes || 'Serviço realizado conforme especificações'}</Text>
-                        </Col>
-                    </Row>
-                </div>
-            </Col>
-        </Row>
-
-        <Divider />
-
-        {/* Valor Final do Serviço */}
-        <div style={{ background: '#e6f7ff', padding: '24px 16px', borderRadius: '4px', marginBottom: 24 }}>
-            <Row align="middle" justify="space-between">
-                <Col>
-                    <Title level={4} style={{ margin: 0, color: '#1677ff', marginBottom: 20 }}>
-                        Valor Final do Serviço
-                    </Title>
-                    <Row gutter={48}> {/* Aumentei o gutter para empurrar "Valor final" mais para a direita */}
-                        <Col>
-                            <Text>Desconto aplicado:</Text>
-                            <br />
-                            <Text strong>{chamadoData.valores?.descontoAplicado || 'R$ 0,00'}</Text>
-                        </Col>
-                        <Col>
-                            <Text>Valor final:</Text>
-                            <br />
-                            <Text strong>{chamadoData.valores?.valorFinal || chamadoData.price}</Text>
-                        </Col>
-                    </Row>
+            <Row gutter={16} style={{ marginTop: 12 }}>
+                <Col span={12}>
+                    <Text strong>Tipo de Serviço:</Text>
+                    <br />
+                    <Tag style={{
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '9px',
+                        width: 'fit-content',
+                        marginTop: '8px'
+                    }}>
+                        {chamadoData.tipoServico}
+                    </Tag>
                 </Col>
-                <Col style={{ textAlign: 'right' }}>
-                    <Title level={2} style={{ margin: 0, color: '#1677ff' }}>
-                        {chamadoData.price}
-                    </Title>
-                    <Text>Total do Serviço</Text>
+                <Col span={12}>
+                    <Text strong>Valor total:</Text>
+                    <br />
+                    <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(chamadoData.valorFinal)}</Text>
                 </Col>
             </Row>
-        </div>
-    </>
-);
+
+            <Divider />
+
+            {/* Seção de Informações do Atendimento */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 14 }}>
+                <Title level={5} style={{ margin: 0 }}><ClockCircleOutlined style={{ marginRight: 8 }} />Informações do Atendimento</Title>
+            </div>
+            <Row gutter={[16, 16]}>
+                <Col span={12}>
+                    <Text strong>Data e Hora do Serviço:</Text><br />
+                    <Text>{callDateTime}</Text>
+                </Col>
+                <Col span={12}>
+                    <Text strong>Motorista:</Text><br />
+                    <Text>{chamadoData.motoristaNome || 'Não atribuído'}</Text>
+                </Col>
+                <Col span={12}>
+                    <Text strong>Guincho:</Text><br />
+                    <Text>{chamadoData.guinchoDescricao || 'Não atribuído'}</Text>
+                </Col>
+                <Col span={24}>
+                    <Text strong>Observações Gerais:</Text><br />
+                    <Text>{chamadoData.observacoes || 'Nenhuma'}</Text>
+                </Col>
+            </Row>
+        </>
+    );
+};
+
+// Componente para a seção "Valores do Serviço"
+const ValoresServicoContent = ({ chamadoId }) => {
+
+    const { valores, isLoading, error } = useValoresServico(chamadoId);
+
+    console.log('Valores do serviço:', valores);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '--'; // Retorna '--' se a data for nula ou vazia
+        return dayjs(dateString).format('DD/MM/YYYY');
+    };
+
+    if (isLoading) {
+        return <div style={{ textAlign: 'center', padding: '50px' }}><Spin tip="Carregando valores..." /></div>;
+    }
+
+    if (error || !valores) {
+        return <div style={{ padding: '20px' }}><Text type="secondary">Nenhum valor de serviço foi configurado para este chamado.</Text></div>;
+    }
+
+    return (
+        <>
+            {/* Seção de Resumo Financeiro */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 18 }}>
+                <Title level={5} style={{ margin: 0 }}><DollarOutlined style={{ marginRight: 8 }} />Resumo Financeiro</Title>
+            </div>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Pagamento Quilometragem:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.totalPagamento)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Acerto com Motorista:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.totalAcerto)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Pedágios:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>
+                        {formatCurrency(
+                            // Verifica se custosPedagio existe e calcula a soma
+                            valores.custosPedagio?.reduce(
+                                (acc, pedagio) => acc + (pedagio.quantidadePedagio * pedagio.valorPedagio),
+                                0 // O valor inicial da soma é 0
+                            )
+                        )}
+                    </Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Patins:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.valorPatins)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Hora Parada:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.totalHoraParada)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Hora Trabalhada:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.totalHoraTrabalhada)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Diárias:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.totalDiarias)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Text>Rodas Extras:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.valorRodas)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16} >
+                <Col span={12}>
+                    <Text >Excedente:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong>{formatCurrency(valores.excedente)}</Text>
+                </Col>
+            </Row>
+            <Row gutter={16} >
+                <Col span={12}>
+                    <Text >Desconto:</Text>
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                    <Text strong style={{ color: '#f81900ff' }}>{formatCurrency(valores.desconto)}</Text>
+                </Col>
+            </Row>
+
+            <div style={{ background: '#e6f7ff', padding: '16px', borderRadius: '4px', textAlign: 'right', marginTop: 18 }}>
+                <Title level={4} style={{ margin: 0 }}>Total do Serviço: <span style={{ color: '#1890ff' }}>{formatCurrency(valores.total)}</span></Title>
+            </div>
+
+            <Divider />
+
+            {/* Seção de Detalhamento Financeiro */}
+            <div style={{ background: '#f5f5f5', padding: '12px 16px', borderRadius: '4px', marginBottom: 24 }}>
+                <Title level={5} style={{ margin: 0 }}>
+                    <DollarOutlined style={{ marginRight: 8 }} />
+                    Detalhamento dos Valores
+                </Title>
+            </div>
+
+            {/* Pagamento Quilometragem */}
+            <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Pagamento Quilometragem</Title>
+                <Row gutter={16}>
+                    <Col span={4}>
+                        <Text strong>Quilômetros rodados:</Text>
+                        <br />
+                        <Text>{valores.pagamentoKmRodados || '--'}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Valor por KM:</Text>
+                        <br />
+                        <Text>{formatCurrency(valores.pagamentoValorKm)}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Quantidade Saída:</Text>
+                        <br />
+                        <Text>{valores.pagamentoQuantidadeSaida || '--'}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Valor Saída:</Text>
+                        <br />
+                        <Text>{formatCurrency(valores.pagamentoValorSaida)}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Total:</Text>
+                        <br />
+                        <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalPagamento)}</Text>
+                    </Col>
+                </Row>
+            </div>
+
+            {/* Acerto com Motorista */}
+            <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Acerto com Motorista</Title>
+                <Row gutter={16}>
+                    <Col span={4}>
+                        <Text strong>Quilômetros rodados:</Text>
+                        <br />
+                        <Text>{valores.acertoKmRodados || '--'}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Valor por KM:</Text>
+                        <br />
+                        <Text>{formatCurrency(valores.acertoValorKm)}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Quantidade Saída:</Text>
+                        <br />
+                        <Text>{valores.acertoQuantidadeSaida || '--'}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Valor Saída:</Text>
+                        <br />
+                        <Text>{formatCurrency(valores.acertoValorSaida)}</Text>
+                    </Col>
+                    <Col span={5}>
+                        <Text strong>Total:</Text>
+                        <br />
+                        <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalAcerto)}</Text>
+                    </Col>
+                </Row>
+            </div>
+
+            {/* Pedágios e Patins */}
+            <Row gutter={24} style={{ marginBottom: 24 }}>
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Pedágios</Title>
+                        {valores.custosPedagio && valores.custosPedagio.length > 0 ? (
+                            valores.custosPedagio.map((pedagio, index) => (
+                                <Row key={index} gutter={16} style={{ marginBottom: 8 }}>
+                                    <Col span={8}>
+                                        <Text strong>Quantidade:</Text><br />
+                                        <Text>{pedagio.quantidadePedagio || '--'}</Text>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Text strong>Valor:</Text><br />
+                                        <Text>{formatCurrency(pedagio.valorPedagio)}</Text>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Text strong>Total:</Text><br />
+                                        <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>
+                                            {formatCurrency(pedagio.quantidadePedagio * pedagio.valorPedagio)}
+                                        </Text>
+                                    </Col>
+                                </Row>
+                            ))
+                        ) : (
+                            <Text>Nenhum pedágio registrado.</Text>
+                        )}
+                    </div>
+                </Col>
+
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Patins</Title>
+                        <Row gutter={16}>
+                            <Col span={24}>
+                                <Text strong>Valor:</Text>
+                                <br />
+                                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.valorPatins)}</Text>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col span={24}>
+                                <Text strong>Descrição:</Text>
+                                <br />
+                                <Text>{valores.descricaoPatins || '--'}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+            </Row>
+
+            {/* Hora Parada e Hora Trabalhada */}
+            <Row gutter={24} style={{ marginBottom: 24 }}>
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Hora Parada</Title>
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <Text strong>Horas:</Text>
+                                <br />
+                                <Text>{valores.horasParadas || '--'}</Text>
+                            </Col>
+                            <Col span={8}>
+                                <Text strong>Valor por hora:</Text>
+                                <br />
+                                <Text>{formatCurrency(valores.valorHoraParada)}</Text>
+                            </Col>
+                            <Col span={8}>
+                                <Text strong>Total: </Text>
+                                <br />
+                                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalHoraParada)}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Hora Trabalhada</Title>
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <Text strong>Horas:</Text>
+                                <br />
+                                <Text>{valores.horasTrabalhadas || '--'}</Text>
+                            </Col>
+                            <Col span={8}>
+                                <Text strong>Valor por hora:</Text>
+                                <br />
+                                <Text>{formatCurrency(valores.valorHoraTrabalhada)}</Text>
+                            </Col>
+                            <Col span={8}>
+                                <Text strong>Total: </Text>
+                                <br />
+                                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalHoraTrabalhada)}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+            </Row>
+
+            {/* Diárias */}
+            <div style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Diárias</Title>
+                <Row gutter={16}>
+                    <Col span={4}>
+                        <Text strong>Entrada:</Text>
+                        <br />
+                        <Text>{formatDate(valores.entradaDiarias)}</Text>
+                    </Col>
+                    <Col span={4}>
+                        <Text strong>Saída:</Text>
+                        <br />
+                        <Text>{formatDate(valores.saidaDiarias)}</Text>
+                    </Col>
+                    <Col span={4}>
+                        <Text strong>Estadias:</Text>
+                        <br />
+                        <Text>{valores.estadiasDiarias || '--'}</Text>
+                    </Col>
+                    <Col span={4}>
+                        <Text strong>Valor por dia:</Text>
+                        <br />
+                        <Text>{formatCurrency(valores.valorDiaria)}</Text>
+                    </Col>
+                    <Col span={4}>
+                        <Text strong>Total: </Text>
+                        <br />
+                        <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalDiarias)}</Text>
+                    </Col>
+                </Row>
+            </div>
+
+            {/* Rodas Extras e Valor excedente */}
+            <Row gutter={24} style={{ marginBottom: 24 }}>
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Rodas Extras</Title>
+                        <Row gutter={16}>
+                            <Col span={24}>
+                                <Text strong>Valor:</Text>
+                                <br />
+                                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.valorRodas)}</Text>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col span={24}>
+                                <Text strong>Descrição:</Text>
+                                <br />
+                                <Text>{valores.descricaoRodas || '--'}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+
+                <Col span={12}>
+                    <div style={{ border: '1px solid #f0f0f0', padding: 16, borderRadius: 4 }}>
+                        <Title level={5} style={{ margin: 0, marginBottom: 12 }}>Valor excedente</Title>
+                        <Row gutter={16}>
+                            <Col span={24}>
+                                <Text strong>Excedente:</Text>
+                                <br />
+                                <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.excedente)}</Text>
+                            </Col>
+                            <Col span={24}>
+                                <Text strong>Observações:</Text>
+                                <br />
+                                <Text>{valores.observacoesExcedente || '--'}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+            </Row>
+
+            <Divider />
+
+            {/* Valor Final do Serviço */}
+            <div style={{ background: '#e6f7ff', padding: '24px 16px', borderRadius: '4px', marginBottom: 24 }}>
+                <Row align="middle" justify="space-between">
+                    <Col>
+                        <Title level={4} style={{ margin: 0, color: '#1677ff', marginBottom: 20 }}>
+                            Valor Final do Serviço
+                        </Title>
+                        <Row gutter={48} style={{ marginTop: 12 }}>
+                            <Col>
+                                <Text>Subtotal:</Text><br />
+                                <Text strong>{formatCurrency(valores.subtotal)}</Text>
+                            </Col>
+                            <Col>
+                                <Text>Desconto aplicado:</Text><br />
+                                <Text strong style={{ color: '#f81900ff' }}>{formatCurrency(valores.desconto)}</Text>
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col style={{ textAlign: 'right' }}>
+                        <Title level={2} style={{ margin: 0, color: '#1677ff' }}>
+                            {/* O valor final já vem calculado do backend */}
+                            {formatCurrency(valores.total)}
+                        </Title>
+                        <Text>Total do Serviço</Text>
+                    </Col>
+                </Row>
+            </div>
+
+        </>
+    );
+};
+
 
 const VerChamadoModal = ({ chamadoData }) => {
 
     const { data: chamadoCompleto, isLoading } = useChamadoById(chamadoData.id);
 
     // Se estiver carregando, mostra um spinner
-    if (isLoading) return <Spin tip="Carregando detalhes do chamado..." />;
+    if (isLoading) return <div style={{ textAlign: 'center', padding: '50px' }}><Spin tip="Carregando detalhes do chamado..." /></div>;
 
     // Se a API trouxe dados, usa eles; senão, usa o que veio da lista
     const dados = chamadoCompleto || chamadoData;
 
     return (
         <Tabs defaultActiveKey="1">
-            <TabPane tab="Dados do Chamado" key="1">
+            <TabPane tab="Dados do Serviço" key="1">
                 <DadosChamadoContent chamadoData={dados} />
             </TabPane>
             <TabPane tab="Valores do Serviço" key="2">
-                <ValoresServicoContent chamadoData={dados} />
+                <ValoresServicoContent chamadoId={dados.id} />
             </TabPane>
         </Tabs>
     );
 };
+
 export default VerChamadoModal;

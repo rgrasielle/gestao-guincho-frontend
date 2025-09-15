@@ -1,32 +1,59 @@
 import { Row, Col } from 'antd';
-import { PhoneOutlined, ClockCircleOutlined, CheckCircleOutlined, DollarOutlined } from '@ant-design/icons';
+import {
+    PhoneOutlined,
+    ClockCircleOutlined,
+    CheckCircleOutlined,
+    DollarOutlined
+} from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
+import { useChamados } from '../../hooks/useChamados';
 
 const StatisticRow = () => {
-    // Dados de exemplo para os cards de estatísticas
+    // Pegando os dados de chamados pelo hook
+    const { data, isLoading, error } = useChamados();
+
+    // Tratamento de carregamento
+    if (isLoading) {
+        return <p>Carregando estatísticas...</p>;
+    }
+
+    if (error) {
+        return <p>Erro ao carregar estatísticas.</p>;
+    }
+
+    // A lista de chamados está em data.content
+    const chamados = data?.content || [];
+
+    // Cálculos das estatísticas
+    const totalChamados = chamados.length;
+    const emAndamento = chamados.filter(c => c.status === "EM_ANDAMENTO").length;
+    const finalizados = chamados.filter(c => c.status === "FINALIZADO").length;
+    const receitaTotal = chamados.reduce((acc, c) => acc + (Number(c.valorFinal) || 0), 0);
+
+    // Montagem dos cards
     const stats = [
         {
             title: "Total de Chamados",
-            value: "127",
-            description: "+12% em relação ao mês passado",
+            value: totalChamados,
+            description: " ",
             icon: <PhoneOutlined style={{ color: '#1677ff', fontSize: 24 }} />
         },
         {
             title: "Em Andamento",
-            value: "23",
-            description: "+5% em relação ao mês passado",
+            value: emAndamento,
+            description: " ",
             icon: <ClockCircleOutlined style={{ color: '#ffc53d', fontSize: 24 }} />
         },
         {
-            title: "Finalizados Hoje",
-            value: "8",
-            description: "+2% em relação ao mês passado",
+            title: "Finalizados",
+            value: finalizados,
+            description: " ",
             icon: <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 24 }} />
         },
         {
-            title: "Receita Mensal",
-            value: "R$ 45.320",
-            description: "+18% em relação ao mês passado",
+            title: "Receita Total",
+            value: `R$ ${receitaTotal.toLocaleString("pt-BR")}`,
+            description: " ",
             icon: <DollarOutlined style={{ color: '#1677ff', fontSize: 24 }} />
         }
     ];

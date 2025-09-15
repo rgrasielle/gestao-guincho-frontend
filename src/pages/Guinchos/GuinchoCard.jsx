@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Button, Typography, Space, Divider } from 'antd';
 import { TruckOutlined, EditOutlined, SyncOutlined } from '@ant-design/icons';
 import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
@@ -9,13 +8,13 @@ const GuinchoCard = ({ guincho, onEdit, onUpdateAvailability }) => {
     return (
         <Card
             hoverable
-            style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #f0f0f0' }}
+            style={{ marginBottom: 16, borderRadius: 2, border: '1px solid #f0f0f0' }}
         >
             {/* Informações do Guincho */}
             <div>
-                <Space style={{ marginBottom: 8 }}>
-                    <TruckOutlined style={{ marginRight: 4, color: '#1677ff' }} />
-                    <Text strong>{guincho.modelo}</Text>
+                <Space style={{ marginBottom: 20 }} align="center">
+                    <TruckOutlined style={{ fontSize: '20px', color: '#1677ff' }} />
+                    <Text style={{ fontSize: '18px', fontWeight: 600 }}>{guincho.modelo}</Text>
                     <MotoristaGuinchoStatusTag status={guincho.disponibilidade} />
                 </Space>
                 <div style={{ marginLeft: 24, marginBottom: 8 }}>

@@ -1,23 +1,29 @@
 import { useState } from 'react';
-import { Button, Typography, Form, Select } from 'antd';
+import { Button, Typography, notification } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 
 import CustomModal from '../../components/CustomModal';
 import MotoristaFormModal from '../../components/MotoristaFormModal';
-
-// Componentes exclusivos da página Motoristas
 import DriverList from './DriverList';
 import UpdateDriverAvailabilityModal from './UpdateDriverAvailabilityModal';
 
-import { useMotoristas } from '../../hooks/useMotoristas';
+import {
+    useMotoristas,
+    useCriarMotorista,
+    useAtualizarMotorista,
+    useAtualizarDisponibilidade
+} from '../../hooks/useMotoristas';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-const { Item } = Form;
 
 const MotoristasPage = () => {
+    // Hook para buscar a lista de motoristas
+    const { data: drivers, isLoading } = useMotoristas();
 
-    const { drivers, isLoading, criarMotorista, atualizarMotorista, atualizarDisponibilidadeMotorista } = useMotoristas();
+    // Hooks para realizar ações (mutações)
+    const { mutate: criarMotorista } = useCriarMotorista();
+    const { mutate: atualizarMotorista } = useAtualizarMotorista();
+    const { mutate: atualizarDisponibilidadeMotorista } = useAtualizarDisponibilidade();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
@@ -33,12 +39,12 @@ const MotoristasPage = () => {
 
     // Função para editar motorista
     const handleEdit = (driverId) => {
-        const driverToEdit = drivers.find(d => d.id === driverId);
+        const driverToEdit = (drivers || []).find(d => d.id === driverId);
         showModal(
             'Editar Motorista',
             <MotoristaFormModal
                 onCancel={handleCancel}
-                onSave={handleSave}
+                onSave={(values) => handleSave({ ...values, id: driverToEdit.id })}
                 initialData={driverToEdit}
             />,
             450
@@ -59,23 +65,25 @@ const MotoristasPage = () => {
         );
     };
 
-    const handleSave = async (values) => {
-        try {
-            if (values.id) {
-                // Atualização
-                if (values.disponibilidade) {
-                    // Atualização de disponibilidade
-                    await atualizarDisponibilidadeMotorista(values.id, values.disponibilidade);
-                } else {
-                    await atualizarMotorista(values.id, values);
-                }
-            } else {
-                // Novo motorista
-                await criarMotorista(values);
-            }
+    const handleSave = (values) => {
+        const onSuccess = () => {
+            notification.success({ message: 'Motorista salvo com sucesso!' });
             setIsModalOpen(false);
-        } catch (error) {
-            console.error('Erro ao salvar motorista:', error);
+        };
+
+        const onError = (error) => {
+            console.error("Erro ao salvar motorista:", error);
+            notification.error({ message: 'Erro ao salvar motorista.' });
+        };
+
+        if (values.id) {
+            if (values.disponibilidade && Object.keys(values).length <= 2) {
+                atualizarDisponibilidadeMotorista({ id: values.id, disponibilidade: values.disponibilidade }, { onSuccess, onError });
+            } else {
+                atualizarMotorista({ id: values.id, dados: values }, { onSuccess, onError });
+            }
+        } else {
+            criarMotorista(values, { onSuccess, onError });
         }
     };
 

@@ -1,25 +1,30 @@
 import { useState } from 'react';
-import { Button, Typography, Form, Select } from 'antd';
+import { Button, Typography, Form, Select, notification } from 'antd';
 import { TruckOutlined } from '@ant-design/icons';
 
 import CustomModal from '../../components/CustomModal';
 import GuinchoFormModal from '../../components/GuinchoFormModal';
-
-// Componentes exclusivos da página Guinchos
 import GuinchoList from './GuinchoList';
 import UpdateGuinchoAvailabilityModal from './UpdateGuinchoAvailabilityModal';
 
-import { useGuinchos } from '../../hooks/useGuinchos';
+// Hooks
+import {
+    useGuinchos,
+    useCriarGuincho,
+    useAtualizarGuincho,
+    useAtualizarDisponibilidadeGuincho
+} from '../../hooks/useGuinchos';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-const { Item } = Form;
 
 // Exemplo de dados para guinchos
 const GuinchosPage = () => {
 
     // Hook que retorna lista e mutations
-    const { guinchos, isLoading, criarGuincho, atualizarGuincho, atualizarDisponibilidadeGuincho } = useGuinchos();
+    const { data: guinchos, isLoading } = useGuinchos();
+    const { mutate: criarGuincho } = useCriarGuincho();
+    const { mutate: atualizarGuincho } = useAtualizarGuincho();
+    const { mutate: atualizarDisponibilidadeGuincho } = useAtualizarDisponibilidadeGuincho();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
@@ -35,17 +40,22 @@ const GuinchosPage = () => {
 
     // Função para editar guincho
     const handleEdit = (guinchoId) => {
-        const guinchoToEdit = guinchos.find(d => d.id === guinchoId);
+        // Usamos 'guinchos || []' para garantir que não quebre se os dados ainda não chegaram
+        const guinchoToEdit = (guinchos || []).find(d => d.id === guinchoId);
         showModal(
             'Editar Guincho',
-            <GuinchoFormModal onCancel={handleCancel} onSave={handleSave} initialData={guinchoToEdit} />,
+            <GuinchoFormModal
+                onCancel={handleCancel}
+                onSave={(values) => handleSave({ ...values, id: guinchoToEdit.id })}
+                initialData={guinchoToEdit}
+            />,
             450
         );
     };
 
     // Função para atualizar disponibilidade
     const handleUpdateAvailability = (guinchoId) => {
-        const guinchoToUpdate = guinchos.find(d => d.id === guinchoId);
+        const guinchoToUpdate = (guinchos || []).find(d => d.id === guinchoId);
         showModal(
             'Atualizar Disponibilidade',
             <UpdateGuinchoAvailabilityModal onCancel={handleCancel} onSave={handleSave} initialData={guinchoToUpdate} />,
@@ -54,17 +64,25 @@ const GuinchosPage = () => {
     };
 
     const handleSave = (values) => {
+        const onSuccess = () => {
+            notification.success({ message: 'Operação realizada com sucesso!' });
+            setIsModalOpen(false);
+        };
+        const onError = (error) => {
+            console.error("Erro ao salvar guincho:", error);
+            notification.error({ message: 'Ocorreu um erro na operação.' });
+        };
+
         if (values.id) {
-            // Se tiver id, decide se é atualização completa ou apenas disponibilidade
-            if (values.disponibilidade && !values.modelo) {
-                atualizarDisponibilidadeGuincho.mutate(values);
+            // Atualização
+            if (values.disponibilidade && Object.keys(values).length <= 2) {
+                atualizarDisponibilidadeGuincho({ id: values.id, disponibilidade: values.disponibilidade }, { onSuccess, onError });
             } else {
-                atualizarGuincho.mutate({ id: values.id, dados: values });
+                atualizarGuincho({ id: values.id, dados: values }, { onSuccess, onError });
             }
         } else {
-            criarGuincho.mutate(values);
+            criarGuincho(values, { onSuccess, onError });
         }
-        setIsModalOpen(false);
     };
 
     const handleCancel = () => setIsModalOpen(false);

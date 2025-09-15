@@ -1,4 +1,4 @@
-import { Card, Typography, Space } from 'antd';
+import { Card, Typography } from 'antd';
 
 const { Title, Text } = Typography;
 
