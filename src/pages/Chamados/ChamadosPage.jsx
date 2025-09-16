@@ -56,13 +56,16 @@ const ChamadosPage = () => {
         setCurrentCalls(data?.content || []);
     }, [data]);
 
+    useEffect(() => {
+        console.log("Filtros ativos sendo enviados para a API:", activeFilters);
+    }, [activeFilters]);
+
 
     // ----------------- Funções -----------------
     const handlePageChange = (page) => setCurrentPage(page);
 
     // Função que o componente Filters vai chamar
     const handleFilterChange = (field, value) => {
-        // Se o campo for 'busca', atualiza apenas o estado local `buscaValue`
         if (field === 'busca') {
             setBuscaValue(value);
         } else {
@@ -152,14 +155,12 @@ const ChamadosPage = () => {
         setModalTitle(`Valores do Serviço - Chamado ${callId}`);
         setModalContent(
             <ValoresServicoFormModal
+                key={callId}
                 chamadoId={callId}
                 onCancel={handleCancel}
                 onSave={() => {
-                    // 1. Fecha o modal e mostra a mensagem de sucesso
                     handleCancel();
                     message.success("Valores do serviço salvos com sucesso!");
-
-                    // 2. Pede ao React Query para buscar a lista de chamados novamente
                     refetch();
                 }}
             />

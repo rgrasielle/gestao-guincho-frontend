@@ -1,4 +1,3 @@
-
 import { Card, Button, Typography, Space, List } from 'antd';
 import StatusTag from '../../components/StatusTag';
 import { useChamados } from '../../hooks/useChamados';
@@ -27,25 +26,23 @@ const RecentCallsList = ({ onShowAll, onShowViewModal }) => {
         return <Card title="Chamados Recentes">Erro ao carregar chamados.</Card>;
     }
 
-    // Pegamos apenas os últimos 3 chamados (ordenados por data de criação, se tiver campo `createdAt`)
+    // Pega apenas os últimos 3 chamados (ordenados por data de criação)
     const recentCalls = [...chamados]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Verifique se seu DTO possui o campo 'createdAt'
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 3)
         .map((c) => ({
             id: c.id,
             status: c.status,
-            // NOVO: Calcula o tempo relativo a partir de agora
-            timeAgo: c.createdAt ? dayjs(c.createdAt).fromNow(true) : "—", // O 'true' remove o "há"
+            timeAgo: c.createdAt ? dayjs(c.createdAt).fromNow(true) : "—", // Calcula o tempo relativo a partir de agora
             clientName: c.clienteNome || "—",
             car: `${c.veiculoModelo || ""} • ${c.veiculoPlaca || ""}`,
-            // NOVO: Adicionamos origem e destino juntos para o endereço
             address: `${c.origemFormatada} → ${c.destinoFormatado}`,
             motoristaNome: c.motoristaNome || "Não atribuído",
             chamadoOriginal: c
         }));
 
     return (
-        <Card
+        <Card hoverable
             title="Chamados Recentes"
             extra={
                 <Button type="link" onClick={onShowAll}>

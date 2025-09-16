@@ -4,7 +4,7 @@ const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
 });
 
-// 👉 Interceptor de requisição: adiciona o token automaticamente
+// Interceptor de requisição: adiciona o token automaticamente
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -13,7 +13,7 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// 👉 Interceptor de resposta: tratamento global de erros
+// Interceptor de resposta: tratamento global de erros
 api.interceptors.response.use(
     (response) => response,
     (error) => {

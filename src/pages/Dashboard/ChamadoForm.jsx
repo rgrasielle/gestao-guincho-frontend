@@ -1,6 +1,7 @@
-import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, notification } from 'antd';
+import { useState } from 'react';
+import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, notification, Modal } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MaskedInput } from 'antd-mask-input';
 
 import { useCriarChamado } from '../../hooks/useChamados';
@@ -17,14 +18,15 @@ const ChamadoForm = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
-    // Chamada do hook de mutação
-    const { mutate: criarChamado } = useCriarChamado();
+    const [isFormDirty, setIsFormDirty] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-    // Chamada dos hooks para buscar os dados dos selects
+    // Hooks de mutação e busca
+    const { mutate: criarChamado } = useCriarChamado();
     const { data: motoristas, isLoading: loadingMotoristas } = useMotoristas();
     const { data: guinchos, isLoading: loadingGuinchos } = useGuinchos();
-
     const handleKeyDown = useEnterToNavigate();
+
 
     const handleFinish = (values) => {
         // Converte horaServico do TimePicker para string "HH:mm:ss"
@@ -51,16 +53,64 @@ const ChamadoForm = () => {
         });
     };
 
+    const handleCepChange = async (event, tipoEndereco) => {
+
+        const cep = event.target.value.replace(/\D/g, '');  // 1. Pega o valor do CEP e limpa (deixa só os números)
+        if (cep.length !== 8) {   // 2. Se o CEP não tiver 8 dígitos, não faz nada
+            return;
+        }
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`); // 3. Se o CEP tem 8 dígitos, busca na API
+            const data = await response.json();
+            if (data.erro) {  // Se a API retornar um erro (CEP não encontrado)
+                console.log("CEP não encontrado.");
+                return;
+            }
+
+            if (tipoEndereco === 'origem') { // 4. Preenche os campos do formulário para Origem ou Destino
+                form.setFieldsValue({
+                    origem: {
+                        cidade: data.localidade,
+                        estado: data.uf,
+                        bairro: data.bairro,
+                        logradouro: data.logradouro,
+                    }
+                });
+            } else if (tipoEndereco === 'destino') {
+                form.setFieldsValue({
+                    destino: {
+                        cidade: data.localidade,
+                        estado: data.uf,
+                        bairro: data.bairro,
+                        logradouro: data.logradouro,
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+        }
+    };
+
+    // Função para lidar com o clique no botão "Voltar"
+    const handleBackClick = () => {
+        if (isFormDirty) {
+            // Se o formulário estiver sujo, apenas mude o estado para ABRIR o modal
+            setIsConfirmModalOpen(true);
+        } else {
+            // Se não estiver sujo, navega direto
+            navigate('/dashboard');
+        }
+    };
+
+
     return (
         <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
             <Header style={{ background: '#fff', padding: '0 24px', height: 64, borderBottom: '1px solid #f0f0f0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Link to="/dashboard" style={{ marginRight: 16 }}>
-                            <Button type="link" icon={<LeftOutlined />}>
-                                Voltar
-                            </Button>
-                        </Link>
+                        <Button type="link" icon={<LeftOutlined />} onClick={handleBackClick} style={{ marginRight: 16 }}>
+                            Voltar
+                        </Button>
                         <Title level={4} style={{ margin: 0 }}>
                             Novo Chamado
                         </Title>
@@ -74,6 +124,7 @@ const ChamadoForm = () => {
                     layout="vertical"
                     onFinish={handleFinish}
                     onKeyDown={handleKeyDown}
+                    onValuesChange={() => setIsFormDirty(true)}
                 >
                     {/* Seção 1: Dados do Cliente */}
                     <Card style={{ marginBottom: 24 }} title={<Title level={4}>Dados do Cliente</Title>}>
@@ -158,7 +209,11 @@ const ChamadoForm = () => {
                                 <Row gutter={16}>
                                     <Col span={24}>
                                         <Form.Item name={['origem', 'cep']} label={<Text strong>CEP</Text>}>
-                                            <MaskedInput mask="00000-000" placeholder="00000-000" />
+                                            <MaskedInput
+                                                mask="00000-000"
+                                                placeholder="00000-000"
+                                                onChange={(e) => handleCepChange(e, 'origem')}
+                                            />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -200,7 +255,11 @@ const ChamadoForm = () => {
                                 <Row gutter={16}>
                                     <Col span={24}>
                                         <Form.Item name={['destino', 'cep']} label={<Text strong>CEP</Text>}>
-                                            <MaskedInput mask="00000-000" placeholder="00000-000" />
+                                            <MaskedInput
+                                                mask="00000-000"
+                                                placeholder="00000-000"
+                                                onChange={(e) => handleCepChange(e, 'destino')}
+                                            />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -307,13 +366,26 @@ const ChamadoForm = () => {
 
                     {/* Botões */}
                     <div style={{ textAlign: 'right', marginTop: 24 }}>
-                        <Button style={{ marginRight: 8 }} onClick={() => navigate('/chamados')}>Cancelar</Button>
+                        <Button style={{ marginRight: 8 }} onClick={handleBackClick}>Cancelar</Button>
                         <Button type="primary" htmlType="submit">
                             Salvar Chamado
                         </Button>
                     </div>
                 </Form>
             </Content>
+
+            <Modal
+                title="Descartar alterações?"
+                open={isConfirmModalOpen}
+                onOk={() => navigate('/dashboard')} // Ação do botão OK é navegar
+                onCancel={() => setIsConfirmModalOpen(false)} // Ação do botão Cancelar é só fechar
+                okText="Sim, descartar"
+                cancelText="Não"
+                okType="danger"
+            >
+                <p>Você preencheu alguns campos. Se voltar, os dados serão perdidos. Deseja continuar?</p>
+            </Modal>
+
         </Layout >
     );
 };

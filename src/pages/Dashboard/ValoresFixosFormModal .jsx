@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
 import { Form, InputNumber, Button, Space, Typography } from 'antd';
-import { DollarOutlined } from '@ant-design/icons';
-
 import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
 
 const { Text } = Typography;
@@ -31,7 +29,7 @@ const ValoresFixosFormModal = ({ onCancel, onSave, initialData }) => {
             onFinish={handleFinish}
             onKeyDown={handleKeyDown}
         >
-            {/* Campos de valores fixos */}
+
             <Form.Item
                 name="valorQuilometragemPorKm"
                 label={<Text strong>Quilometragem - Valor por KM (R$)</Text>}

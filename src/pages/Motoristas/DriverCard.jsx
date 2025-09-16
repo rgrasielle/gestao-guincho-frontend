@@ -10,7 +10,7 @@ const DriverCard = ({ driver, onEdit, onUpdateAvailability }) => {
             hoverable
             style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #f0f0f0' }}
         >
-            {/* Informações do Motorista */}
+
             <div>
                 <Space style={{ marginBottom: 20 }} align="center">
                     <UserOutlined style={{ fontSize: '20px', color: '#1677ff' }} />
@@ -39,7 +39,6 @@ const DriverCard = ({ driver, onEdit, onUpdateAvailability }) => {
                 </div>
             </div>
 
-            {/* Divisor */}
             <Divider style={{ margin: '16px 0' }} />
 
             {/* Botões de Ação */}

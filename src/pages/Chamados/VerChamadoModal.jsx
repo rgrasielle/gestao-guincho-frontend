@@ -64,12 +64,10 @@ const DadosChamadoContent = ({ chamadoData }) => {
                     <Text>{formatPhone(chamadoData.clienteTelefone)}</Text>
                 </Col>
                 <Col span={12}>
-                    {/* <-- ADICIONADO --> */}
                     <Text strong>E-mail:</Text><br />
                     <Text>{chamadoData.clienteEmail || 'Não informado'}</Text>
                 </Col>
                 <Col span={24}>
-                    {/* <-- ADICIONADO --> */}
                     <Text strong>Solicitante:</Text><br />
                     <Text>{chamadoData.clienteSolicitante || 'Não informado'}</Text>
                 </Col>
@@ -110,12 +108,12 @@ const DadosChamadoContent = ({ chamadoData }) => {
                 <Col span={12}>
                     <Text strong>Origem:</Text><br />
                     <Text>{chamadoData.origemFormatada || 'Não informado'}</Text><br />
-                    <Text type='secondary'>CEP: {chamadoData.origemCep || '--'}</Text>
+                    <Text>CEP: {chamadoData.origemCep || '--'}</Text>
                 </Col>
                 <Col span={12}>
                     <Text strong>Destino:</Text><br />
                     <Text>{chamadoData.destinoFormatado || 'Não informado'}</Text><br />
-                    <Text type='secondary'>CEP: {chamadoData.destinoCep || '--'}</Text>
+                    <Text>CEP: {chamadoData.destinoCep || '--'}</Text>
                 </Col>
             </Row>
 
@@ -193,7 +191,7 @@ const ValoresServicoContent = ({ chamadoId }) => {
     console.log('Valores do serviço:', valores);
 
     const formatDate = (dateString) => {
-        if (!dateString) return '--'; // Retorna '--' se a data for nula ou vazia
+        if (!dateString) return '--';
         return dayjs(dateString).format('DD/MM/YYYY');
     };
 
@@ -486,22 +484,22 @@ const ValoresServicoContent = ({ chamadoId }) => {
                         <br />
                         <Text>{formatDate(valores.entradaDiarias)}</Text>
                     </Col>
-                    <Col span={4}>
+                    <Col span={5}>
                         <Text strong>Saída:</Text>
                         <br />
                         <Text>{formatDate(valores.saidaDiarias)}</Text>
                     </Col>
-                    <Col span={4}>
+                    <Col span={5}>
                         <Text strong>Estadias:</Text>
                         <br />
                         <Text>{valores.estadiasDiarias || '--'}</Text>
                     </Col>
-                    <Col span={4}>
+                    <Col span={5}>
                         <Text strong>Valor por dia:</Text>
                         <br />
                         <Text>{formatCurrency(valores.valorDiaria)}</Text>
                     </Col>
-                    <Col span={4}>
+                    <Col span={5}>
                         <Text strong>Total: </Text>
                         <br />
                         <Text style={{ color: '#1890ff', fontWeight: 'bold' }}>{formatCurrency(valores.totalDiarias)}</Text>
@@ -592,7 +590,7 @@ const VerChamadoModal = ({ chamadoData }) => {
     // Se estiver carregando, mostra um spinner
     if (isLoading) return <div style={{ textAlign: 'center', padding: '50px' }}><Spin tip="Carregando detalhes do chamado..." /></div>;
 
-    // Se a API trouxe dados, usa eles; senão, usa o que veio da lista
+    // Se a API trouxe dados, usa eles, senão, usa o que veio da lista
     const dados = chamadoCompleto || chamadoData;
 
     return (

@@ -109,9 +109,19 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
 
     // useEffect para inicializar o formulário
     useEffect(() => {
-        if (valoresDoServico && valoresFixos) {
+        form.resetFields();
+        if (valoresDoServico && valoresFixos) { // LIMPA O FORMULÁRIO: Garante que dados de um chamado anterior não apareçam.
+
+            // VERIFICA O CARREGAMENTO: Se os dados (fixos ou do serviço) ainda estiverem carregando,
+            // o hook para por aqui para evitar preencher o form antes da hora.
+            if (loadingServico || loadingFixos) {
+                return;
+            }
+
+            // DEFINE VALORES INICIAIS: Preenche com dados do serviço (se existirem)
+            // ou com os valores fixos padrão (se for um novo registro de valores).
             const initialFormValues = {
-                ...valoresDoServico,
+                ...(valoresDoServico || {}), // Usa os valores do serviço se existirem, senão um objeto vazio para não dar erro
                 pagamentoValorKm: valoresDoServico?.pagamentoValorKm ?? valoresFixos?.valorQuilometragemPorKm ?? 0,
                 pagamentoValorSaida: valoresDoServico?.pagamentoValorSaida ?? valoresFixos?.valorQuilometragemSaida ?? 0,
                 acertoValorKm: valoresDoServico?.acertoValorKm ?? valoresFixos?.valorMotoristaPorKm ?? 0,
@@ -133,7 +143,7 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
             handleValuesChange({}, initialFormValues);
 
         }
-    }, [valoresDoServico, valoresFixos, loadingServico, loadingFixos, form, handleValuesChange]);
+    }, [chamadoId, valoresDoServico, valoresFixos, loadingServico, loadingFixos, form, handleValuesChange]);
 
 
     // Função para lidar com o envio do formulário
@@ -205,9 +215,9 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
                                 parser={getPriceParser}
                                 style={{
                                     width: '100%',
-                                    backgroundColor: '#f5f5f5', // Fundo cinza para o campo desabilitado
-                                    color: 'rgba(0, 0, 0, 0.88)', // Cor do texto preta
-                                    fontWeight: 'bold' // Texto em negrito
+                                    backgroundColor: '#f5f5f5',
+                                    color: 'rgba(0, 0, 0, 0.88)',
+                                    fontWeight: 'bold'
                                 }}
                                 disabled
                             />
@@ -250,9 +260,9 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
                                 parser={getPriceParser}
                                 style={{
                                     width: '100%',
-                                    backgroundColor: '#f5f5f5', // Fundo cinza para o campo desabilitado
-                                    color: 'rgba(0, 0, 0, 0.88)', // Cor do texto preta
-                                    fontWeight: 'bold' // Texto em negrito
+                                    backgroundColor: '#f5f5f5',
+                                    color: 'rgba(0, 0, 0, 0.88)',
+                                    fontWeight: 'bold'
                                 }}
                                 disabled
                             />
@@ -465,9 +475,9 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
                                 parser={getPriceParser}
                                 style={{
                                     width: '100%',
-                                    backgroundColor: '#f5f5f5', // Fundo cinza para o campo desabilitado
-                                    color: 'rgba(0, 0, 0, 0.88)', // Cor do texto preta
-                                    fontWeight: 'bold' // Texto em negrito
+                                    backgroundColor: '#f5f5f5',
+                                    color: 'rgba(0, 0, 0, 0.88)',
+                                    fontWeight: 'bold'
                                 }}
                                 disabled
                             />

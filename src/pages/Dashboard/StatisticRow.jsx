@@ -1,59 +1,61 @@
 import { Row, Col } from 'antd';
 import {
-    PhoneOutlined,
+    ExclamationCircleOutlined,
     ClockCircleOutlined,
     CheckCircleOutlined,
     DollarOutlined
 } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
 import { useChamados } from '../../hooks/useChamados';
+import dayjs from 'dayjs';
 
 const StatisticRow = () => {
-    // Pegando os dados de chamados pelo hook
-    const { data, isLoading, error } = useChamados();
 
-    // Tratamento de carregamento
-    if (isLoading) {
+    // Busca de dados
+    const hojeInicio = dayjs().startOf('day').toISOString();
+    const hojeFim = dayjs().endOf('day').toISOString();
+
+    // Buscas separadas para cada métrica 
+    const { data: abertosData, isLoading: loadingAbertos } = useChamados({ status: 'ABERTO' });
+    const { data: emAndamentoData, isLoading: loadingEmAndamento } = useChamados({ status: 'EM_ANDAMENTO' });
+    const { data: finalizadosHojeData, isLoading: loadingFinalizados } = useChamados({
+        status: 'FINALIZADO',
+        dataFechamentoInicio: hojeInicio,
+        dataFechamentoFim: hojeFim,
+    });
+
+    if (loadingAbertos || loadingEmAndamento || loadingFinalizados) {
         return <p>Carregando estatísticas...</p>;
     }
 
-    if (error) {
-        return <p>Erro ao carregar estatísticas.</p>;
-    }
+    // Cálculos
+    const totalAbertos = abertosData?.totalElements || 0;
+    const totalEmAndamento = emAndamentoData?.totalElements || 0;
+    const totalFinalizadosHoje = finalizadosHojeData?.totalElements || 0;
 
-    // A lista de chamados está em data.content
-    const chamados = data?.content || [];
+    const receitaDoDia = (finalizadosHojeData?.content || []).reduce((acc, c) => acc + (Number(c.valorFinal) || 0), 0);
 
-    // Cálculos das estatísticas
-    const totalChamados = chamados.length;
-    const emAndamento = chamados.filter(c => c.status === "EM_ANDAMENTO").length;
-    const finalizados = chamados.filter(c => c.status === "FINALIZADO").length;
-    const receitaTotal = chamados.reduce((acc, c) => acc + (Number(c.valorFinal) || 0), 0);
 
     // Montagem dos cards
     const stats = [
         {
-            title: "Total de Chamados",
-            value: totalChamados,
-            description: " ",
-            icon: <PhoneOutlined style={{ color: '#1677ff', fontSize: 24 }} />
+            title: "Chamados Abertos",
+            value: totalAbertos,
+            icon: <ExclamationCircleOutlined style={{ color: '#1677ff', fontSize: 24 }} />
         },
         {
             title: "Em Andamento",
-            value: emAndamento,
-            description: " ",
-            icon: <ClockCircleOutlined style={{ color: '#ffc53d', fontSize: 24 }} />
+            value: totalEmAndamento,
+            icon: <ClockCircleOutlined style={{ color: '#faad14', fontSize: 24 }} />
         },
         {
-            title: "Finalizados",
-            value: finalizados,
-            description: " ",
+            title: "Finalizados (Hoje)",
+            value: totalFinalizadosHoje,
             icon: <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 24 }} />
         },
         {
-            title: "Receita Total",
-            value: `R$ ${receitaTotal.toLocaleString("pt-BR")}`,
-            description: " ",
+            title: "Receita do Dia",
+            value: `R$ ${receitaDoDia.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             icon: <DollarOutlined style={{ color: '#1677ff', fontSize: 24 }} />
         }
     ];
@@ -62,12 +64,7 @@ const StatisticRow = () => {
         <Row gutter={[16, 16]}>
             {stats.map((stat, index) => (
                 <Col key={index} xs={24} sm={12} md={6}>
-                    <StatisticCard
-                        title={stat.title}
-                        value={stat.value}
-                        description={stat.description}
-                        icon={stat.icon}
-                    />
+                    <StatisticCard {...stat} description=" " />
                 </Col>
             ))}
         </Row>

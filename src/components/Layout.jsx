@@ -12,7 +12,7 @@ const AppLayout = () => {
             <Sidebar />
             <Layout style={{ marginLeft: 200 }}>
                 <AppHeader />
-                <Content style={{ margin: "15px", background: "#fff", padding: 70 }}>
+                <Content style={{ marginTop: "15px", marginLeft: "15px", background: "#fff", padding: 70 }}>
                     <Outlet /> {/* Aqui entram as páginas */}
                 </Content>
             </Layout>

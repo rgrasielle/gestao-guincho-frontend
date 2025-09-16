@@ -1,8 +1,7 @@
-import React from 'react';
 import { Modal } from 'antd';
 import { TruckOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
 
-const CustomModal = ({ title, open, onOk, onCancel, children, width }) => { // 👈 Adicione 'width' aqui
+const CustomModal = ({ title, open, onOk, onCancel, children, width }) => {
     const getTitleWithIcon = (modalTitle) => {
         let icon = null;
 
@@ -38,7 +37,7 @@ const CustomModal = ({ title, open, onOk, onCancel, children, width }) => { // �
             onOk={onOk}
             onCancel={onCancel}
             footer={null}
-            width={width || 450} // 👈 Use a largura dinâmica ou o padrão 450
+            width={width || 450}
         >
             {children}
         </Modal>

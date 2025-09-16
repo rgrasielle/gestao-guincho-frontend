@@ -40,7 +40,7 @@ const GuinchosPage = () => {
 
     // Função para editar guincho
     const handleEdit = (guinchoId) => {
-        // Usamos 'guinchos || []' para garantir que não quebre se os dados ainda não chegaram
+        // Usa 'guinchos || []' para garantir que não quebre se os dados ainda não chegaram
         const guinchoToEdit = (guinchos || []).find(d => d.id === guinchoId);
         showModal(
             'Editar Guincho',
@@ -108,7 +108,7 @@ const GuinchosPage = () => {
                 guinchos={guinchos}
                 onEdit={handleEdit}
                 onUpdateAvailability={handleUpdateAvailability}
-                loading={isLoading} // mostra spinner se estiver carregando
+                loading={isLoading}
             />
 
             <CustomModal

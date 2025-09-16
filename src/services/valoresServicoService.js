@@ -1,4 +1,4 @@
-import api from './api'; // seu axios configurado
+import api from './api';
 
 const valoresServicoService = {
     // Buscar valores de um chamado específico

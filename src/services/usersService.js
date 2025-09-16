@@ -1,4 +1,4 @@
-import api from "./api"; // Sua instância configurada do Axios
+import api from "./api";
 
 const usersService = {
 

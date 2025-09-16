@@ -8,7 +8,7 @@ const GuinchoCard = ({ guincho, onEdit, onUpdateAvailability }) => {
     return (
         <Card
             hoverable
-            style={{ marginBottom: 16, borderRadius: 2, border: '1px solid #f0f0f0' }}
+            style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #f0f0f0' }}
         >
             {/* Informações do Guincho */}
             <div>
@@ -29,7 +29,7 @@ const GuinchoCard = ({ guincho, onEdit, onUpdateAvailability }) => {
                 </div>
                 <div style={{ marginLeft: 24, marginBottom: 8 }}>
                     <Text>
-                        <b>Capacidade:</b> {guincho.capacidade} kg
+                        <b>Capacidade:</b> {guincho.capacidade} toneladas
                     </Text>
                 </div>
             </div>

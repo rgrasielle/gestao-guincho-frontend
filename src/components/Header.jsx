@@ -34,8 +34,8 @@ const AppHeader = () => {
             key: 'logout',
             icon: <LogoutOutlined />,
             label: 'Sair',
-            danger: true, // Deixa o item em vermelho
-            onClick: logout, // Chama a função de logout
+            danger: true,
+            onClick: logout,
         },
     ];
 

@@ -3,14 +3,13 @@ import {
     HomeOutlined,
     PhoneOutlined,
     TruckOutlined,
-    DollarOutlined,
-    FileTextOutlined,
-    SettingOutlined,
     LogoutOutlined,
     TeamOutlined
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import ConfirmationModal from "./ConfirmationModal";
+import { useState } from "react";
 
 const { Sider } = Layout;
 
@@ -21,6 +20,8 @@ const Sidebar = () => {
 
     const { logout } = useAuth();
 
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
     // Items do menu principal
     const mainMenuItems = [
         { key: "dashboard", icon: <HomeOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
@@ -28,74 +29,91 @@ const Sidebar = () => {
         { key: "motoristas", icon: <TeamOutlined />, label: <Link to="/motoristas">Motoristas</Link> },
         { key: "guinchos", icon: <TruckOutlined />, label: <Link to="/guinchos">Guinchos</Link> },
         /* { key: "financeiro", icon: <DollarOutlined />, label: <Link to="/financeiro">Financeiro</Link> }, */
-        { key: "relatorios", icon: <FileTextOutlined />, label: <Link to="/relatorios">Relatórios</Link> },
-    ];
-
-    // Items do menu inferior
-    const bottomMenuItems = [
+        /*{ key: "relatorios", icon: <FileTextOutlined />, label: <Link to="/relatorios">Relatórios</Link> }, */
+        { key: 'spacer', style: { flexGrow: 1 }, disabled: true, label: ' ' },
         /* { key: "configuracoes", icon: <SettingOutlined />, label: <Link to="/configuracoes">Configurações</Link> }, */
         {
             key: "sair",
             icon: <LogoutOutlined />,
-            label: <span
-                onClick={() => {
-                    message.success("Você saiu da aplicação!");
-                    logout();
-                }}
-                style={{ cursor: "pointer" }}>Sair</span>
+            label: "Sair",
         },
     ];
 
+    const handleMenuClick = (event) => {
+        if (event.key === 'sair') {
+            setIsLogoutModalOpen(true);
+        }
+    };
+
     return (
-        <Sider
-            width={250}
-            style={{
-                background: "#fff",
-                borderRight: "1px solid #f0f0f0",
-                height: "100vh",
-                position: "fixed",
-                left: 0,
-                top: 0,
-            }}
-        >
-            {/* Logo */}
-            <div
+        <>
+            <Sider
+                width={250}
                 style={{
-                    height: 64,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: "bold",
-                    fontSize: "20px",
-                    color: "#1677ff",
-                    borderBottom: "1px solid #f0f0f0",
+                    background: "#fff",
+                    borderRight: "1px solid #f0f0f0",
+                    height: "100vh",
+                    position: "fixed",
+                    left: 0,
+                    top: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+
+
                 }}
             >
-                GestãoGuincho
-            </div>
+                {/* Logo */}
+                <div
+                    style={{
+                        height: 64, // Altura do header
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "0 24px", // Adiciona espaçamento nas laterais
+                        fontWeight: "bold",
+                        fontSize: "20px",
+                        color: "#1677ff",
+                        borderBottom: "1px solid #f0f0f0",
 
-            {/* Menu principal */}
-            <Menu
-                mode="inline"
-                selectedKeys={[selectedKey]}
-                style={{ borderRight: 0 }}
-                items={mainMenuItems}
-            />
+                    }}
+                >
+                    GestãoGuincho
+                </div>
 
-            {/* Menu inferior */}
-            <Menu
-                mode="inline"
-                selectedKeys={["configuracoes", "sair"].includes(selectedKey) ? [selectedKey] : []}
-                style={{
-                    position: "absolute",
-                    bottom: 0,
-                    width: "100%",
-                    borderTop: "1px solid #f0f0f0",
+                {/* Menu */}
+                <Menu
+                    mode="inline"
+                    selectedKeys={[selectedKey]}
+                    items={mainMenuItems}
+                    onClick={handleMenuClick}
+                    style={{
+                        borderRight: 0,
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        padding: '16px 10px', // Espaçamento geral
+                        display: 'flex', // Faz o Menu usar Flexbox internamente
+                        flexDirection: 'column', // Organiza os itens na vertical
+                        height: 'calc(100% - 64px)', // Ocupa o resto da altura
+                    }}
+                    itemMarginBlock={8}
+                />
+            </Sider>
+
+            <ConfirmationModal
+                open={isLogoutModalOpen}
+                title="Você tem certeza que deseja sair?"
+                content="Você será desconectado da sua conta."
+                okText="Sim, Sair"
+                cancelText="Cancelar"
+                onConfirm={() => {
+                    setIsLogoutModalOpen(false);
+                    message.success("Você saiu com sucesso!");
+                    logout(); // Executa o logout
                 }}
-                items={bottomMenuItems}
+                onCancel={() => setIsLogoutModalOpen(false)}
             />
-        </Sider>
+        </>
     );
 };
 
 export default Sidebar;
+

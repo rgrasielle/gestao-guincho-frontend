@@ -3,7 +3,7 @@ import { Row, Col, Empty } from 'antd';
 import GuinchoCard from './GuinchoCard';
 
 const GuinchoList = ({ guinchos, onEdit, onUpdateAvailability }) => {
-    // Se a lista de guinchos estiver vazia, mostramos um componente de "vazio"
+    // Se a lista de guinchos estiver vazia, mostra um componente de "vazio"
     if (!guinchos || guinchos.length === 0) {
         return <Empty description="Nenhum guincho cadastrado." />;
     }

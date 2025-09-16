@@ -75,7 +75,6 @@ export function useAtualizarStatus() {
 
 
 // Deletar chamado
-
 export function useDeletarChamado() {
     const queryClient = useQueryClient();
 

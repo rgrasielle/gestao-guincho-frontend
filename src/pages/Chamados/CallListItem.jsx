@@ -13,10 +13,13 @@ import {
 } from '@ant-design/icons';
 import StatusTag from '../../components/StatusTag';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 
 const { Text, Title } = Typography;
 
 const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModal, onShowUpdateStatusModal }) => {
+
+    const [isRegistrarValoresHovered, setIsRegistrarValoresHovered] = useState(false);
 
     // Helper para formatar moeda
     const formatCurrency = (value) => {
@@ -37,18 +40,33 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
         return phone; // Retorna o original se não for um formato conhecido
     };
 
+    // Estilos do botão
+    const registrarValoresStyle = {
+        backgroundColor: '#52c41a',
+        borderColor: '#52c41a',
+        color: '#fff',
+        transition: 'background-color 0.3s',
+    };
+
+    const registrarValoresHoverStyle = {
+        backgroundColor: '#6ad336ff',
+        borderColor: '#6ad336ff',
+    };
+
     // Variáveis de formatação
     const vehicleDescription = `${call.veiculoModelo || ''} ${call.veiculoAno || ''} • ${call.veiculoPlaca || ''}`;
     const callDateTime = call.dataServico && call.hora
         ? `${dayjs(call.dataServico).format('DD/MM/YYYY')} às ${dayjs(call.hora, 'HH:mm:ss').format('HH:mm')}`
         : 'Data não informada';
 
+    const semiBoldStyle = { fontWeight: 500 };
+
     return (
         <Card hoverable style={{ marginBottom: 16 }}>
-            {/* NOVO: Container principal para todas as informações (antes do divisor) */}
+            {/* Container principal para todas as informações (antes do divisor) */}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    {/* Coluna 1: Dados do Cliente e Veículo (sem alterações) */}
+                    {/* Coluna 1: Dados do Cliente e Veículo */}
                     <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <Space>
                             <Title level={5} style={{ color: '#1677ff', margin: 0, marginBottom: 6, fontWeight: 'bold' }}>{`CH${String(call.id).padStart(3, '0')}`}</Title>
@@ -76,7 +94,7 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                         </div>
                     </div>
 
-                    {/* Coluna 2: Origem, Destino e Datas (sem alterações) */}
+                    {/* Coluna 2: Origem, Destino e Datas */}
                     <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div>
                             <Space align="center">
@@ -103,7 +121,7 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                         {call.tipoServico && <Tag style={{ border: '1px solid #d9d9d9', borderRadius: '9px', width: 'fit-content' }}>{call.tipoServico}</Tag>}
                     </div>
 
-                    {/* Coluna 3: Motorista, Guincho e Valor (sem os botões) */}
+                    {/* Coluna 3: Motorista, Guincho e Valor */}
                     <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
                         <div>
                             <Text>Motorista:</Text><br />
@@ -118,22 +136,37 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                 </div>
             </div>
 
-            {/* DIVISOR: Adicionado para separar as informações das ações */}
             <Divider style={{ margin: '16px 0' }} />
 
-            {/* NOVO: Container para os botões de ação, alinhado à direita */}
+            {/* Container para os botões de ação */}
             <div style={{ textAlign: 'right' }}>
                 <Space wrap>
-                    <Button icon={<EyeOutlined />} onClick={() => onShowViewModal(call.id)}>Ver</Button>
-                    <Button icon={<EditOutlined />} onClick={() => onShowEditModal(call.id)}>Editar</Button>
+                    <Button
+                        icon={<EyeOutlined />}
+                        onClick={() => onShowViewModal(call.id)}
+                        style={semiBoldStyle}
+                    >
+                        Ver
+                    </Button>
+
+                    <Button
+                        icon={<EditOutlined />}
+                        onClick={() => onShowEditModal(call.id)}
+                        style={semiBoldStyle}
+                    >
+                        Editar
+                    </Button>
+
                     <Button
                         icon={<DollarOutlined />}
-                        onClick={() => onShowValuesModal(call.id)}
+                        onMouseEnter={() => setIsRegistrarValoresHovered(true)}
+                        onMouseLeave={() => setIsRegistrarValoresHovered(false)}
                         style={{
-                            backgroundColor: '#52c41a',
-                            borderColor: '#52c41a',
-                            color: 'white'
+                            ...semiBoldStyle,
+                            ...registrarValoresStyle,
+                            ...(isRegistrarValoresHovered ? registrarValoresHoverStyle : {})
                         }}
+                        onClick={() => onShowValuesModal(call.id)}
                     >
                         Registrar Valores
                     </Button>
@@ -141,6 +174,7 @@ const CallListItem = ({ call, onShowValuesModal, onShowEditModal, onShowViewModa
                         type="primary"
                         icon={<SyncOutlined />}
                         onClick={() => onShowUpdateStatusModal(call.id)}
+                        style={semiBoldStyle}
                     >
                         Atualizar Status
                     </Button>

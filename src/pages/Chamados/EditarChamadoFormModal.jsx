@@ -116,6 +116,44 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
         onSave(chamadoData.id, dtoParaEnviar);
     };
 
+    const handleCepChange = async (event, tipoEndereco) => {
+        const cep = event.target.value.replace(/\D/g, '');
+
+        if (cep.length !== 8) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (data.erro) {
+                console.log("CEP não encontrado.");
+                return;
+            }
+
+            // Lógica ajustada para os nomes PLANOS do formulário de edição
+            if (tipoEndereco === 'origem') {
+                form.setFieldsValue({
+                    origemCidade: data.localidade,
+                    origemEstado: data.uf,
+                    origemBairro: data.bairro,
+                    origemLogradouro: data.logradouro,
+                });
+            } else if (tipoEndereco === 'destino') {
+                form.setFieldsValue({
+                    destinoCidade: data.localidade,
+                    destinoEstado: data.uf,
+                    destinoBairro: data.bairro,
+                    destinoLogradouro: data.logradouro,
+                });
+            }
+
+        } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+        }
+    };
+
     return (
         <Form
             form={form}
@@ -157,9 +195,13 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
                     </Form.Item>
                 </Col>
             </Row>
-            <Form.Item name="clienteSolicitante" label="Solicitante">
-                <Input placeholder="Nome do solicitante" />
-            </Form.Item>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="clienteSolicitante" label="Solicitante">
+                        <Input placeholder="Nome do solicitante" />
+                    </Form.Item>
+                </Col>
+            </Row>
 
             <Divider />
 
@@ -206,7 +248,11 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
                     <Row gutter={16}>
                         <Col span={24}>
                             <Form.Item name="origemCep" label="CEP">
-                                <MaskedInput mask="00000-000" placeholder="00000-000" />
+                                <MaskedInput
+                                    mask="00000-000"
+                                    placeholder="00000-000"
+                                    onChange={(e) => handleCepChange(e, 'origem')}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -249,7 +295,11 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
                     <Row gutter={16}>
                         <Col span={24}>
                             <Form.Item name="destinoCep" label="CEP">
-                                <MaskedInput mask="00000-000" placeholder="00000-000" />
+                                <MaskedInput
+                                    mask="00000-000"
+                                    placeholder="00000-000"
+                                    onChange={(e) => handleCepChange(e, 'destino')}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -335,15 +385,19 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
                     </Form.Item>
                 </Col>
             </Row>
-            <Form.Item name="motoristaId" label="Prestador (Motorista Responsável)">
-                <Select placeholder="Selecione o motorista" loading={loadingMotoristas}>
-                    {(motoristas || []).map(motorista => (
-                        <Option key={motorista.id} value={motorista.id}>
-                            {motorista.nome}
-                        </Option>
-                    ))}
-                </Select>
-            </Form.Item>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="motoristaId" label="Prestador (Motorista Responsável)">
+                        <Select placeholder="Selecione o motorista" loading={loadingMotoristas}>
+                            {(motoristas || []).map(motorista => (
+                                <Option key={motorista.id} value={motorista.id}>
+                                    {motorista.nome}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Col>
+            </Row>
             <Form.Item name="observacoes" label="Campo de Observações">
                 <TextArea placeholder="Observações gerais do chamado..." autoSize={{ minRows: 2, maxRows: 6 }} />
             </Form.Item>

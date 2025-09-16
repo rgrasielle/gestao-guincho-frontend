@@ -1,4 +1,4 @@
-import api from './api'; // sua instância do axios já configurada
+import api from './api';
 
 const guinchosService = {
     listar: async () => {
