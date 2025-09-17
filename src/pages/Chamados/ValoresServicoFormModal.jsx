@@ -4,7 +4,7 @@ import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 import { useValoresFixos } from '../../hooks/useValoresFixos';
-import { useValoresServico } from '../../hooks/useValoresServico';
+import { useValoresServico } from '../../hooks/useValoresServico.js';
 import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
 
 const { Title, Text } = Typography;

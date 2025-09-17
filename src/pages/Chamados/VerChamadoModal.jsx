@@ -9,11 +9,10 @@ import {
 } from '@ant-design/icons';
 
 import { useChamadoById } from '../../hooks/useChamados';
-import { useValoresServico } from '../../hooks/useValoresServico';
+import { useValoresServico } from '../../hooks/useValoresServico.js';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
 // Helper para formatar moeda
 const formatCurrency = (value) => {
@@ -594,14 +593,21 @@ const VerChamadoModal = ({ chamadoData }) => {
     const dados = chamadoCompleto || chamadoData;
 
     return (
-        <Tabs defaultActiveKey="1">
-            <TabPane tab="Dados do Serviço" key="1">
-                <DadosChamadoContent chamadoData={dados} />
-            </TabPane>
-            <TabPane tab="Valores do Serviço" key="2">
-                <ValoresServicoContent chamadoId={dados.id} />
-            </TabPane>
-        </Tabs>
+        <Tabs
+            defaultActiveKey="1"
+            items={[
+                {
+                    key: '1',
+                    label: 'Dados do Serviço',
+                    children: <DadosChamadoContent chamadoData={dados} />,
+                },
+                {
+                    key: '2',
+                    label: 'Valores do Serviço',
+                    children: <ValoresServicoContent chamadoId={dados.id} />,
+                },
+            ]}
+        />
     );
 };
 
