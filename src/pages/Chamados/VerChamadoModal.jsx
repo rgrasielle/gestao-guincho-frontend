@@ -185,21 +185,21 @@ const DadosChamadoContent = ({ chamadoData }) => {
 // Componente para a seção "Valores do Serviço"
 const ValoresServicoContent = ({ chamadoId }) => {
 
-    const { valores, isLoading, error } = useValoresServico(chamadoId);
-
-    console.log('Valores do serviço:', valores);
+    // O hook useValoresServico agora retorna 'data', e não 'valores'
+    // Renomeia 'data' para 'valores' para não precisar alterar todo o código abaixo
+    const { data: valores, isError } = useValoresServico(chamadoId);
 
     const formatDate = (dateString) => {
         if (!dateString) return '--';
         return dayjs(dateString).format('DD/MM/YYYY');
     };
 
-    if (isLoading) {
-        return <div style={{ textAlign: 'center', padding: '50px' }}><Spin tip="Carregando valores..." /></div>;
-    }
-
-    if (error || !valores) {
-        return <div style={{ padding: '20px' }}><Text type="secondary">Nenhum valor de serviço foi configurado para este chamado.</Text></div>;
+    if (isError || !valores) {
+        return (
+            <div style={{ padding: '20px' }}>
+                <Text type="secondary">Nenhum valor de serviço foi configurado para este chamado.</Text>
+            </div>
+        );
     }
 
     return (

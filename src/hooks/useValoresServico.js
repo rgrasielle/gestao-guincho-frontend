@@ -1,53 +1,35 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { App } from 'antd';
+import { useApiMutation } from './useUsers'; // Importando nosso hook wrapper
 import valoresServicoService from '../services/valoresServicoService';
 
-export const useValoresServico = (chamadoId) => {
-    const [valores, setValores] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [formInitialized, setFormInitialized] = useState(false); // flag para inicialização única
+/**
+ * Hook para BUSCAR os valores de serviço de um chamado específico.
+ */
+export function useValoresServico(chamadoId) {
+    return useQuery({
+        // A chave do cache inclui o ID do chamado para que cada um tenha seu próprio cache
+        queryKey: ['valoresServico', chamadoId],
+        queryFn: () => valoresServicoService.buscarValores(chamadoId),
+        enabled: !!chamadoId, // A busca só é executada se um chamadoId for fornecido
+    });
+}
 
-    // Função para buscar os valores do chamado
-    const buscarValores = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const data = await valoresServicoService.buscarValores(chamadoId);
-            setValores(data);
-            return data;
-        } catch (err) {
-            setError(err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [chamadoId]);
+/**
+ * Hook para SALVAR (criar/atualizar) os valores de serviço de um chamado.
+ */
+export function useSalvarValoresServico(chamadoId) {
+    const queryClient = useQueryClient();
+    const { notification } = App.useApp();
 
-    // Função para criar ou atualizar os valores
-    const salvarValores = async (dados) => {
-        try {
-            setIsLoading(true);
-            const data = await valoresServicoService.salvarValores(chamadoId, dados);
-            setValores(data); // atualiza com os valores do backend
-            return data;
-        } catch (err) {
-            setError(err);
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    return useApiMutation({
+        mutationFn: (dados) => valoresServicoService.salvarValores(chamadoId, dados),
+        onSuccess: () => {
+            notification.success({ message: 'Valores do serviço salvos com sucesso!' });
 
-    // Buscar os valores automaticamente ao iniciar
-    useEffect(() => {
-        if (chamadoId && !formInitialized) {
-            buscarValores().then(() => setFormInitialized(true));
-        }
-    }, [chamadoId, buscarValores, formInitialized]);
-
-    return {
-        valores,
-        isLoading,
-        error,
-        buscarValores,
-        salvarValores
-    };
-};
+            // Invalida o cache para forçar a atualização dos dados na tela
+            queryClient.invalidateQueries({ queryKey: ['valoresServico', chamadoId] });
+            queryClient.invalidateQueries({ queryKey: ['chamados'] }); // Invalida a lista principal de chamados
+        },
+    });
+}

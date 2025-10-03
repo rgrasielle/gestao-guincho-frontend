@@ -28,18 +28,22 @@ const RecentCallsList = ({ onShowAll, onShowViewModal }) => {
 
     // Pega apenas os últimos 3 chamados (ordenados por data de criação)
     const recentCalls = [...chamados]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        // Ordena diretamente pelo timestamp numérico (o maior é o mais recente)
+        .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 3)
-        .map((c) => ({
-            id: c.id,
-            status: c.status,
-            timeAgo: c.createdAt ? dayjs(c.createdAt).fromNow(true) : "—", // Calcula o tempo relativo a partir de agora
-            clientName: c.clienteNome || "—",
-            car: `${c.veiculoModelo || ""} • ${c.veiculoPlaca || ""}`,
-            address: `${c.origemFormatada} → ${c.destinoFormatado}`,
-            motoristaNome: c.motoristaNome || "Não atribuído",
-            chamadoOriginal: c
-        }));
+        .map((c) => {
+            return {
+                id: c.id,
+                status: c.status,
+                // CORREÇÃO FINAL: Multiplica o timestamp em segundos por 1000 para converter para milissegundos
+                timeAgo: c.createdAt ? dayjs(c.createdAt * 1000).fromNow(true) : "—",
+                clientName: c.clienteNome || "—",
+                car: `${c.veiculoModelo || ""} • ${c.veiculoPlaca || ""}`,
+                address: `${c.origemFormatada || "Origem não informada"} → ${c.destinoFormatado || "Destino não informado"}`,
+                motoristaNome: c.motoristaNome || "Não atribuído",
+                chamadoOriginal: c
+            };
+        });
 
     return (
         <Card hoverable

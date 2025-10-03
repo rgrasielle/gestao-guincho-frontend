@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, Typography, Form, Select, notification } from 'antd';
-import { TruckOutlined } from '@ant-design/icons';
+import { Button, Typography, Space, Popover } from 'antd';
+import { TruckOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import CustomModal from '../../components/CustomModal';
 import GuinchoFormModal from '../../components/GuinchoFormModal';
 import GuinchoList from './GuinchoList';
 import UpdateGuinchoAvailabilityModal from './UpdateGuinchoAvailabilityModal';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 // Hooks
 import {
@@ -17,75 +18,111 @@ import {
 
 const { Title, Text } = Typography;
 
-// Exemplo de dados para guinchos
 const GuinchosPage = () => {
 
-    // Hook que retorna lista e mutations
+    // --- ESTADOS E HOOKS ---
     const { data: guinchos, isLoading } = useGuinchos();
     const { mutate: criarGuincho } = useCriarGuincho();
     const { mutate: atualizarGuincho } = useAtualizarGuincho();
-    const { mutate: atualizarDisponibilidadeGuincho } = useAtualizarDisponibilidadeGuincho();
+    const { mutate: atualizarDisponibilidade } = useAtualizarDisponibilidadeGuincho();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState(null);
     const [modalWidth, setModalWidth] = useState(450);
 
-    const showModal = (title, content, width) => {
+    // --- DADOS DA LEGENDA PARA O POPOVER ---
+    const legendItems = [
+        { status: 'DISPONIVEL', description: 'Nenhum vínculo atual ou futuro.' },
+        { status: 'RESERVADO', description: 'Vinculado a um chamado "Aberto".' },
+        { status: 'EM_ATENDIMENTO', description: 'Vinculado a um chamado "Em Andamento".' },
+        { status: 'INDISPONIVEL', description: 'Indisponível para novos chamados.' }
+    ];
+
+    // Conteúdo JSX para o Popover
+    const legendContent = (
+        <div style={{ maxWidth: '400px' }}>
+            {legendItems.map(item => (
+                <div key={item.status} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                    <MotoristaGuinchoStatusTag status={item.status} />
+                    <Text type="secondary" style={{ marginLeft: '8px', fontSize: '13px' }}>{item.description}</Text>
+                </div>
+            ))}
+        </div>
+    );
+
+    // --- FUNÇÕES DE CONTROLE DO MODAL ---
+    const handleCancel = () => setIsModalOpen(false);
+
+    const showModal = (title, content, width = 450) => {
         setModalTitle(title);
         setModalContent(content);
         setModalWidth(width);
         setIsModalOpen(true);
     };
 
-    // Função para editar guincho
-    const handleEdit = (guinchoId) => {
-        // Usa 'guinchos || []' para garantir que não quebre se os dados ainda não chegaram
+    // --- FUNÇÕES DE AÇÃO ---
+
+    // Ação para SALVAR um novo guincho
+    const handleSaveNew = (formValues) => {
+        criarGuincho(formValues, {
+            onSuccess: () => {
+                // O hook já mostra a notificação. Aqui, só fechamos o modal.
+                handleCancel();
+            }
+        });
+    };
+
+    // Ação para ATUALIZAR um guincho existente
+    const handleSaveEdit = (guinchoId, formValues) => {
+        atualizarGuincho({ id: guinchoId, dados: formValues }, {
+            onSuccess: () => {
+                handleCancel();
+            }
+        });
+    };
+
+    // Ação para ATUALIZAR a disponibilidade
+    const handleSaveAvailability = (guinchoId, formValues) => {
+        atualizarDisponibilidade({ id: guinchoId, disponibilidade: formValues.disponibilidade }, {
+            onSuccess: () => {
+                handleCancel();
+            }
+        });
+    };
+
+    // --- FUNÇÕES PARA ABRIR OS MODAIS ---
+    const handleOpenNewModal = () => {
+        showModal(
+            'Cadastrar Guincho',
+            <GuinchoFormModal onCancel={handleCancel} onSave={handleSaveNew} />
+        );
+    };
+
+    const handleOpenEditModal = (guinchoId) => {
         const guinchoToEdit = (guinchos || []).find(d => d.id === guinchoId);
         showModal(
             'Editar Guincho',
             <GuinchoFormModal
                 onCancel={handleCancel}
-                onSave={(values) => handleSave({ ...values, id: guinchoToEdit.id })}
+                onSave={(values) => handleSaveEdit(guinchoId, values)}
                 initialData={guinchoToEdit}
-            />,
-            450
+            />
         );
     };
 
-    // Função para atualizar disponibilidade
-    const handleUpdateAvailability = (guinchoId) => {
+    const handleOpenAvailabilityModal = (guinchoId) => {
         const guinchoToUpdate = (guinchos || []).find(d => d.id === guinchoId);
         showModal(
             'Atualizar Disponibilidade',
-            <UpdateGuinchoAvailabilityModal onCancel={handleCancel} onSave={handleSave} initialData={guinchoToUpdate} />,
+            <UpdateGuinchoAvailabilityModal
+                onCancel={handleCancel}
+                onSave={(values) => handleSaveAvailability(guinchoId, values)}
+                initialData={guinchoToUpdate}
+            />,
             400
         );
     };
-
-    const handleSave = (values) => {
-        const onSuccess = () => {
-            notification.success({ message: 'Operação realizada com sucesso!' });
-            setIsModalOpen(false);
-        };
-        const onError = (error) => {
-            console.error("Erro ao salvar guincho:", error);
-            notification.error({ message: 'Ocorreu um erro na operação.' });
-        };
-
-        if (values.id) {
-            // Atualização
-            if (values.disponibilidade && Object.keys(values).length <= 2) {
-                atualizarDisponibilidadeGuincho({ id: values.id, disponibilidade: values.disponibilidade }, { onSuccess, onError });
-            } else {
-                atualizarGuincho({ id: values.id, dados: values }, { onSuccess, onError });
-            }
-        } else {
-            criarGuincho(values, { onSuccess, onError });
-        }
-    };
-
-    const handleCancel = () => setIsModalOpen(false);
 
     return (
         <div style={{ padding: 10, minHeight: '100vh', background: '#fff' }}>
@@ -94,20 +131,26 @@ const GuinchosPage = () => {
                     <Title level={2} style={{ margin: 0 }}>Guinchos</Title>
                     <Text type="secondary">Gerencie a frota de guinchos</Text>
                 </div>
-                <Button
-                    type="primary"
-                    size="large"
-                    icon={<TruckOutlined />}
-                    onClick={() => showModal('Cadastrar Guincho', <GuinchoFormModal onCancel={handleCancel} onSave={handleSave} />, 450)}
-                >
-                    Cadastrar Guincho
-                </Button>
+                {/* BOTÕES DO CABEÇALHO AGRUPADOS COM O NOVO ÍCONE DE INFO */}
+                <Space size="middle">
+                    <Popover content={legendContent} title={<Title level={5} style={{ margin: 0 }}>Legenda de Status</Title>} trigger="hover">
+                        <InfoCircleOutlined style={{ fontSize: '24px', color: '#1890ff', cursor: 'pointer' }} />
+                    </Popover>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<TruckOutlined />}
+                        onClick={handleOpenNewModal}
+                    >
+                        Cadastrar Guincho
+                    </Button>
+                </Space>
             </div>
 
             <GuinchoList
                 guinchos={guinchos}
-                onEdit={handleEdit}
-                onUpdateAvailability={handleUpdateAvailability}
+                onEdit={handleOpenEditModal}
+                onUpdateAvailability={handleOpenAvailabilityModal}
                 loading={isLoading}
             />
 

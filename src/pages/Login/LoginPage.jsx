@@ -1,28 +1,32 @@
-import { useState } from "react";
-import { Card, Form, Input, Button, Typography, message, Layout } from "antd";
+import { Card, Form, Input, Button, Typography, Layout, notification } from "antd";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
 import { useAuth } from "../../context/useAuth";
+import { useLogin } from "../../hooks/useUsers";
+import { useEnterToNavigate } from "../../hooks/useEnterToNavigate";
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
 export default function LoginPage() {
-    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
     const { login } = useAuth();
+    const handleKeyDown = useEnterToNavigate();
 
-    const onFinish = async (values) => {
-        try {
-            setLoading(true);
-            const response = await api.post("/auth/login", values);
-            login(response.data.token);
-            message.success("Login realizado com sucesso!");
-        } catch (error) {
-            message.error(error.response?.data?.message || "Erro no login");
-        } finally {
-            setLoading(false);
-        }
+    const { mutate: loginUser, isPending } = useLogin();
+
+    const onFinish = (values) => {
+        loginUser(values, {
+            onSuccess: (data) => {
+                // 'data' é a resposta da API (ex: { token: '...' })
+                login(data.data.token);
+                notification.success({ // Usando notification para padronizar
+                    message: 'Login realizado com sucesso!',
+                    description: 'Você será redirecionado para o dashboard.',
+                    placement: 'topRight',
+                });
+            },
+        });
     };
 
     return (
@@ -46,7 +50,11 @@ export default function LoginPage() {
                         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
                     }}
                 >
-                    <Form layout="vertical" onFinish={onFinish}>
+                    <Form
+                        layout="vertical"
+                        onFinish={onFinish}
+                        onKeyDown={handleKeyDown}
+                    >
                         <Form.Item
                             label={<Text strong>Usuário</Text>}
                             name="username"
@@ -70,7 +78,7 @@ export default function LoginPage() {
                                 type="primary"
                                 htmlType="submit"
                                 style={{ width: '100%' }}
-                                loading={loading}
+                                loading={isPending}
                             >
                                 Entrar
                             </Button>
