@@ -20,6 +20,10 @@ function App() {
   // 2. Pega a instância do QueryClient
   const queryClient = useQueryClient();
 
+  // --- LOG PARA TESTAR A URL DO BACKEND ---
+  console.log("VITE_API_URL usada:", import.meta.env.VITE_API_URL);
+  // -------
+
   // 3. Cria um "ouvinte" de erros
   useEffect(() => {
     // Se inscreve para receber eventos do cache de mutações
