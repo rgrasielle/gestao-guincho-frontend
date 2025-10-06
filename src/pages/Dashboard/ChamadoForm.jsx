@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, Modal, App as AntApp } from 'antd';
+import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, Modal, App as AntApp, Space } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { MaskedInput } from 'antd-mask-input';
@@ -8,6 +8,7 @@ import { useCriarChamado } from '../../hooks/useChamados';
 import { useMotoristas } from '../../hooks/useMotoristas';
 import { useGuinchos } from '../../hooks/useGuinchos';
 import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -348,8 +349,8 @@ const ChamadoForm = () => {
                                         format="HH:mm"
                                         style={{ width: '100%' }}
                                         placeholder="Selecionar hora"
-                                        value={form.getFieldValue(['servico', 'hora'])} // mantém o form controlado
-                                        onSelect={(time) => form.setFieldsValue({ servico: { ...form.getFieldValue('servico'), hora: time } })} // atualiza imediatamente
+                                        value={form.getFieldValue(['servico', 'hora'])}
+                                        onSelect={(time) => form.setFieldsValue({ servico: { ...form.getFieldValue('servico'), hora: time } })}
                                     />
                                 </Form.Item>
 
@@ -367,7 +368,10 @@ const ChamadoForm = () => {
                                     <Select placeholder="Selecione o motorista" loading={loadingMotoristas}>
                                         {(motoristas || []).map(motorista => (
                                             <Option key={motorista.id} value={motorista.id}>
-                                                {motorista.nome}
+                                                <Space>
+                                                    {motorista.nome}
+                                                    <MotoristaGuinchoStatusTag status={motorista.disponibilidade} />
+                                                </Space>
                                             </Option>
                                         ))}
                                     </Select>
@@ -378,7 +382,10 @@ const ChamadoForm = () => {
                                     <Select placeholder="Selecione o guincho" loading={loadingGuinchos}>
                                         {(guinchos || []).map(guincho => (
                                             <Option key={guincho.id} value={guincho.id}>
-                                                {`${guincho.modelo} - ${guincho.placa}`}
+                                                <Space>
+                                                    {`${guincho.modelo} - ${guincho.placa}`}
+                                                    <MotoristaGuinchoStatusTag status={guincho.disponibilidade} />
+                                                </Space>
                                             </Option>
                                         ))}
                                     </Select>
