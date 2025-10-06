@@ -344,8 +344,15 @@ const ChamadoForm = () => {
                             </Col>
                             <Col span={8}>
                                 <Form.Item name={['servico', 'hora']} label={<Text strong>Hora</Text>}>
-                                    <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Selecionar hora" />
+                                    <TimePicker
+                                        format="HH:mm"
+                                        style={{ width: '100%' }}
+                                        placeholder="Selecionar hora"
+                                        value={form.getFieldValue(['servico', 'hora'])} // mantém o form controlado
+                                        onSelect={(time) => form.setFieldsValue({ servico: { ...form.getFieldValue('servico'), hora: time } })} // atualiza imediatamente
+                                    />
                                 </Form.Item>
+
                             </Col>
                             <Col span={8}>
                                 <Form.Item name={['servico', 'tipoServico']} label={<Text strong>Tipo de Serviço</Text>}>

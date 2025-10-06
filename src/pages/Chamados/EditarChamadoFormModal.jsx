@@ -342,8 +342,8 @@ const EditarChamadoFormModal = ({ onCancel, onSave, chamadoData }) => {
                             <TimePicker
                                 format="HH:mm"
                                 style={{ width: '100%' }}
-                                value={form.getFieldValue('hora')} // mantém o form controlado
-                                onSelect={(time) => form.setFieldsValue({ hora: time })} // atualiza imediatamente ao selecionar
+                                value={form.getFieldValue('hora')}
+                                onSelect={(time) => form.setFieldsValue({ hora: time })}
                             />
                         </Form.Item>
                     </Col>
