@@ -19,6 +19,10 @@ const MotoristaGuinchoStatusTag = ({ status }) => {
     const redLight = '#fee2e2';
     const redDark = '#991b3b';
 
+    // Reservado
+    const blueLight = '#e6f7ff';
+    const blueDark = '#096dd9';
+
     // Default
     const grayLight = '#f0f0f0';
     const grayDark = '#595959';
@@ -38,6 +42,11 @@ const MotoristaGuinchoStatusTag = ({ status }) => {
             tagColor = redLight;
             textColor = redDark;
             text = 'Indisponível';
+            break;
+        case 'RESERVADO':
+            tagColor = blueLight;
+            textColor = blueDark;
+            text = 'Reservado';
             break;
         default:
             tagColor = grayLight;

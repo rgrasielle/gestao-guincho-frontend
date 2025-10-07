@@ -9,7 +9,41 @@ import LoginPage from "./pages/Login/LoginPage";
 import RegisterPage from "./pages/Register/RegisterPage";
 import PrivateRoute from "./components/PrivateRoute";
 
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { App as AntApp } from 'antd'; // Importe o App do Ant Design aqui também
+
 function App() {
+
+  // 1. Pega a instância da notificação contextual
+  const { notification } = AntApp.useApp();
+  // 2. Pega a instância do QueryClient
+  const queryClient = useQueryClient();
+
+  // 3. Cria um "ouvinte" de erros
+  useEffect(() => {
+    // Se inscreve para receber eventos do cache de mutações
+    const unsubscribe = queryClient.getMutationCache().subscribe(event => {
+      // Verifica se o evento é do tipo 'error'
+      if (event.type === 'error') {
+        const error = event.error;
+
+        const errorMessage = error?.response?.data?.message || "Ocorreu um erro inesperado. Tente novamente.";
+
+        notification.error({
+          message: 'Operação Falhou',
+          description: errorMessage,
+          placement: 'topRight',
+        });
+      }
+    });
+
+    // Limpa a inscrição quando o componente for desmontado
+    return () => {
+      unsubscribe();
+    };
+  }, [notification, queryClient]);
+
   return (
     <Routes>
       {/* Redirecionamento da raiz */}

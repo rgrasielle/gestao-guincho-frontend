@@ -1,33 +1,44 @@
-import { useState } from "react";
-import { Card, Form, Input, Button, Typography, message, Layout } from "antd";
+import { Card, Form, Input, Button, Typography, Layout, App as AntApp } from "antd";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
 import { useAuth } from "../../context/useAuth";
+import { useRegister } from "../../hooks/useUsers";
+import { useEnterToNavigate } from "../../hooks/useEnterToNavigate";
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
 export default function RegisterPage() {
-    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
+    const handleKeyDown = useEnterToNavigate();
     const { login } = useAuth();
 
-    const onFinish = async (values) => {
+    const { mutate: registerUser, isPending } = useRegister();
+
+    const { notification } = AntApp.useApp();
+
+    const onFinish = (values) => {
         if (values.password !== values.confirmPassword) {
-            message.error("As senhas não coincidem!");
+            // 3. Agora, esta 'notification' vai funcionar!
+            notification.error({
+                message: 'Erro',
+                description: 'As senhas não coincidem!',
+                placement: 'topRight'
+            });
             return;
         }
 
-        try {
-            setLoading(true);
-            const response = await api.post("/auth/register", values);
-            login(response.data.token); // salva token e redireciona para /dashboard
-            message.success("Cadastro realizado com sucesso!");
-        } catch (error) {
-            message.error(error.response?.data?.message || "Erro no cadastro");
-        } finally {
-            setLoading(false);
-        }
+        registerUser(values, {
+            onSuccess: (data) => {
+                login(data.data.token);
+                notification.success({
+                    message: 'Cadastro realizado com sucesso!',
+                    placement: 'topRight'
+                });
+            },
+            // Erros da API, como "usuário já existe",
+            // serão capturados pelo nosso hook useApiMutation.
+        });
     };
 
     return (
@@ -52,7 +63,11 @@ export default function RegisterPage() {
                     }}
 
                 >
-                    <Form layout="vertical" onFinish={onFinish}>
+                    <Form
+                        layout="vertical"
+                        onFinish={onFinish}
+                        onKeyDown={handleKeyDown}
+                    >
                         <Form.Item
                             label={<Text strong>Usuário</Text>}
                             name="username"
@@ -85,7 +100,7 @@ export default function RegisterPage() {
                                 type="primary"
                                 htmlType="submit"
                                 style={{ width: '100%' }}
-                                loading={loading}
+                                loading={isPending}
                             >
                                 Cadastrar
                             </Button>

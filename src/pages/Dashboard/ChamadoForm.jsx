@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, notification, Modal } from 'antd';
+import { useEffect, useState } from 'react';
+import { Layout, Button, Typography, Row, Col, Card, Form, Input, Select, DatePicker, TimePicker, Modal, App as AntApp, Space } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { MaskedInput } from 'antd-mask-input';
@@ -8,6 +8,7 @@ import { useCriarChamado } from '../../hooks/useChamados';
 import { useMotoristas } from '../../hooks/useMotoristas';
 import { useGuinchos } from '../../hooks/useGuinchos';
 import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -17,38 +18,61 @@ const ChamadoForm = () => {
 
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const { notification } = AntApp.useApp(); // Pega a instância da notificação contextual
 
     const [isFormDirty, setIsFormDirty] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+
 
     // Hooks de mutação e busca
-    const { mutate: criarChamado } = useCriarChamado();
+    const { mutate: criarChamado, isPending: isSaving } = useCriarChamado();
     const { data: motoristas, isLoading: loadingMotoristas } = useMotoristas();
     const { data: guinchos, isLoading: loadingGuinchos } = useGuinchos();
     const handleKeyDown = useEnterToNavigate();
 
+    // Lógica de verificação
+    useEffect(() => {
+        if (!loadingMotoristas && !loadingGuinchos) {
+            const hasNoMotoristas = !motoristas || motoristas.length === 0;
+            const hasNoGuinchos = !guinchos || guinchos.length === 0;
+
+            if (hasNoMotoristas || hasNoGuinchos) {
+                let description = '';
+                if (hasNoMotoristas && hasNoGuinchos) {
+                    description = 'É necessário cadastrar pelo menos um motorista e um guincho antes de criar um chamado.';
+                } else if (hasNoMotoristas) {
+                    description = 'É necessário cadastrar pelo menos um motorista antes de criar um chamado.';
+                } else {
+                    description = 'É necessário cadastrar pelo menos um guincho antes de criar um chamado.';
+                }
+
+                notification.warning({
+                    message: 'Pré-requisitos Pendentes',
+                    description: description,
+                    duration: 0,
+                    placement: 'topRight',
+                });
+                setIsSubmitDisabled(true);
+            } else {
+                setIsSubmitDisabled(false);
+            }
+        }
+    }, [motoristas, guinchos, loadingMotoristas, loadingGuinchos, notification]);
+
 
     const handleFinish = (values) => {
-        // Converte horaServico do TimePicker para string "HH:mm:ss"
-        if (values.servico && values.servico.hora) {
+        if (values.servico?.dataServico) {
+            values.servico.dataServico = values.servico.dataServico.format('YYYY-MM-DD');
+        }
+        if (values.servico?.hora) {
             values.servico.hora = values.servico.hora.format('HH:mm:ss');
         }
 
         criarChamado(values, {
             onSuccess: () => {
-                notification.success({
-                    message: 'Sucesso',
-                    description: 'Chamado criado com sucesso!',
-                    placement: 'topRight',
-                });
+                setIsFormDirty(false); // Para não mostrar o aviso de "descartar" após salvar
                 navigate('/chamados');
-            },
-            onError: () => {
-                notification.error({
-                    message: 'Erro',
-                    description: 'Ocorreu um erro ao criar o chamado.',
-                    placement: 'topRight',
-                });
             }
         });
     };
@@ -321,8 +345,15 @@ const ChamadoForm = () => {
                             </Col>
                             <Col span={8}>
                                 <Form.Item name={['servico', 'hora']} label={<Text strong>Hora</Text>}>
-                                    <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Selecionar hora" />
+                                    <TimePicker
+                                        format="HH:mm"
+                                        style={{ width: '100%' }}
+                                        placeholder="Selecionar hora"
+                                        value={form.getFieldValue(['servico', 'hora'])}
+                                        onSelect={(time) => form.setFieldsValue({ servico: { ...form.getFieldValue('servico'), hora: time } })}
+                                    />
                                 </Form.Item>
+
                             </Col>
                             <Col span={8}>
                                 <Form.Item name={['servico', 'tipoServico']} label={<Text strong>Tipo de Serviço</Text>}>
@@ -337,7 +368,10 @@ const ChamadoForm = () => {
                                     <Select placeholder="Selecione o motorista" loading={loadingMotoristas}>
                                         {(motoristas || []).map(motorista => (
                                             <Option key={motorista.id} value={motorista.id}>
-                                                {motorista.nome}
+                                                <Space>
+                                                    {motorista.nome}
+                                                    <MotoristaGuinchoStatusTag status={motorista.disponibilidade} />
+                                                </Space>
                                             </Option>
                                         ))}
                                     </Select>
@@ -348,7 +382,10 @@ const ChamadoForm = () => {
                                     <Select placeholder="Selecione o guincho" loading={loadingGuinchos}>
                                         {(guinchos || []).map(guincho => (
                                             <Option key={guincho.id} value={guincho.id}>
-                                                {`${guincho.modelo} - ${guincho.placa}`}
+                                                <Space>
+                                                    {`${guincho.modelo} - ${guincho.placa}`}
+                                                    <MotoristaGuinchoStatusTag status={guincho.disponibilidade} />
+                                                </Space>
                                             </Option>
                                         ))}
                                     </Select>
@@ -367,7 +404,7 @@ const ChamadoForm = () => {
                     {/* Botões */}
                     <div style={{ textAlign: 'right', marginTop: 24 }}>
                         <Button style={{ marginRight: 8 }} onClick={handleBackClick}>Cancelar</Button>
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" loading={isSaving} disabled={isSubmitDisabled}>
                             Salvar Chamado
                         </Button>
                     </div>

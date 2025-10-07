@@ -62,40 +62,28 @@ const DashboardPage = () => {
 
     // Função de salvar
     const handleSaveMotorista = (values) => {
+        // A função mutate agora só precisa dos dados.
+        // O hook 'useCriarMotorista' já cuida da notificação e de atualizar a lista.
         criarMotorista(values, {
             onSuccess: () => {
-                notification.success({ message: 'Motorista salvo com sucesso!' });
+                // A única coisa que a página precisa fazer é fechar o modal.
                 setIsModalOpen(false);
-            },
-            onError: (error) => {
-                console.error('Erro ao salvar motorista:', error);
-                notification.error({ message: 'Erro ao salvar motorista.' });
-            },
+            }
         });
     };
 
     const handleSaveGuincho = (values) => {
         criarGuincho(values, {
             onSuccess: () => {
-                notification.success({ message: 'Guincho salvo com sucesso!' });
                 setIsModalOpen(false);
-            },
-            onError: (error) => {
-                console.error('Erro ao salvar guincho:', error);
-                notification.error({ message: 'Erro ao salvar guincho.' });
-            },
+            }
         });
     };
 
     const handleSaveValoresFixos = (values) => {
         salvarValores(values, {
             onSuccess: () => {
-                notification.success({ message: 'Valores do serviço salvos com sucesso!' });
                 setIsModalOpen(false);
-            },
-            onError: (error) => {
-                console.error('Erro ao salvar valores do serviço:', error);
-                notification.error({ message: 'Erro ao salvar valores do serviço.' });
             }
         });
     };

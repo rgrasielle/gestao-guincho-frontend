@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, message, Pagination as AntdPagination } from 'antd';
+import { Typography, Pagination as AntdPagination, Spin } from 'antd';
 import dayjs from 'dayjs';
 
 import CustomModal from '../../components/CustomModal';
@@ -18,7 +18,7 @@ const { Text } = Typography;
 
 const ChamadosPage = () => {
 
-    // ----------------- Estados -----------------
+    // --- ESTADOS ---
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
     const [activeFilters, setActiveFilters] = useState({});
@@ -31,14 +31,10 @@ const ChamadosPage = () => {
     const [modalContent, setModalContent] = useState(null);
     const [modalWidth, setModalWidth] = useState(450);
 
-
-    // ----------------- Hooks -----------------
-
-    // Cria uma versão "atrasada" do termo de busca
-    // Ele só será atualizado 500ms após o usuário parar de digitar
+    // --- HOOKS ---
     const debouncedBusca = useDebounce(buscaValue, 500);
 
-    const { data, isLoading, error, refetch } = useChamados({
+    const { data, isLoading, isFetching, error } = useChamados({
         page: currentPage - 1,
         size: pageSize,
         ...activeFilters,
@@ -48,23 +44,18 @@ const ChamadosPage = () => {
     const { mutate: atualizarChamado } = useAtualizarChamado();
     const { mutate: atualizarStatus } = useAtualizarStatus();
 
-    // ----------------- Estado local mutável -----------------
     const [currentCalls, setCurrentCalls] = useState(data?.content || []);
 
-    // Sincroniza estado local sempre que os dados do hook mudarem
     useEffect(() => {
-        setCurrentCalls(data?.content || []);
+        if (data?.content) {
+            setCurrentCalls(data.content);
+        }
     }, [data]);
 
-    useEffect(() => {
-        console.log("Filtros ativos sendo enviados para a API:", activeFilters);
-    }, [activeFilters]);
-
-
-    // ----------------- Funções -----------------
+    // --- FUNÇÕES ---
     const handlePageChange = (page) => setCurrentPage(page);
+    const handleCancel = () => setIsModalOpen(false);
 
-    // Função que o componente Filters vai chamar
     const handleFilterChange = (field, value) => {
         if (field === 'busca') {
             setBuscaValue(value);
@@ -74,70 +65,46 @@ const ChamadosPage = () => {
                 [field]: value === 'todos' || value === 'todas' ? null : value
             }));
         }
-        setCurrentPage(1); // Reseta a página em qualquer mudança de filtro
+        setCurrentPage(1);
     };
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        setModalWidth(450);
-    };
-
+    // --- FUNÇÕES DE SALVAR  ---
     const handleSaveEdit = (id, values) => {
-        atualizarChamado(
-            { id, dados: values },
-            {
-                onSuccess: () => {
-                    message.success("Chamado atualizado com sucesso!");
-                    setIsModalOpen(false);
-                },
-                onError: () => {
-                    message.error("Erro ao atualizar chamado");
-                },
+        atualizarChamado({ id, dados: values }, {
+            onSuccess: () => {
+                handleCancel();
             }
-        );
+        });
     };
 
     const handleSaveStatus = (id, status) => {
         atualizarStatus({ id, status }, {
             onSuccess: () => {
-                message.success("Status do chamado atualizado com sucesso!");
-                setIsModalOpen(false);
-            },
-            onError: () => {
-                message.error("Erro ao atualizar status do chamado.");
+                handleCancel();
             }
         });
     };
 
-    // ----------------- Modais -----------------
-
-    // Ver
-    const handleShowViewModal = (callId) => {
-        const call = currentCalls.find(c => c.id === callId);
-        setModalTitle(`Chamado CH${String(call.id).padStart(3, '0')}`);
-        setModalContent(<VerChamadoModal onCancel={handleCancel} chamadoData={call} />);
-        setModalWidth(750);
-        setIsModalOpen(true);
-    };
+    // --- FUNÇÕES PARA ABRIR OS MODAIS ---
 
     // Editar
     const handleShowEditModal = (callId) => {
-        const call = currentCalls.find(c => c.id === callId);
 
+        const call = currentCalls.find(c => c.id === callId);
         if (!call) return;
 
-        // Converte as strings em objetos Dayjs antes de passar para o modal
+        console.log(call)
+
         const chamadoDataFormatted = {
             ...call,
             dataServico: call.dataServico ? dayjs(call.dataServico, "YYYY-MM-DD") : null,
             hora: call.hora ? dayjs(call.hora, "HH:mm:ss") : null,
         };
 
-        console.log("Chamado selecionado para edição (formatado):", chamadoDataFormatted);
-
         setModalTitle(`Editar Chamado ${callId}`);
         setModalContent(
             <EditarChamadoFormModal
+                key={callId}
                 onCancel={handleCancel}
                 onSave={handleSaveEdit}
                 chamadoData={chamadoDataFormatted}
@@ -149,27 +116,20 @@ const ChamadosPage = () => {
 
     // Registrar Valores
     const handleShowValuesModal = (callId) => {
-        const call = currentCalls.find(c => c.id === callId);
-        if (!call) return;
-
         setModalTitle(`Valores do Serviço - Chamado ${callId}`);
         setModalContent(
             <ValoresServicoFormModal
                 key={callId}
                 chamadoId={callId}
                 onCancel={handleCancel}
-                onSave={() => {
-                    handleCancel();
-                    message.success("Valores do serviço salvos com sucesso!");
-                    refetch();
-                }}
+                onSave={handleCancel}
             />
         );
         setModalWidth(900);
         setIsModalOpen(true);
     };
 
-    // Atualizar Status
+    // Atualizar status
     const handleShowUpdateStatusModal = (callId) => {
         const call = currentCalls.find(c => c.id === callId);
         setModalTitle('');
@@ -178,7 +138,16 @@ const ChamadosPage = () => {
         setIsModalOpen(true);
     };
 
-    // ----------------- Render -----------------
+    // Ver
+    const handleShowViewModal = (callId) => {
+        const call = currentCalls.find(c => c.id === callId);
+        setModalTitle(`Chamado CH${String(call.id).padStart(3, '0')}`);
+        setModalContent(<VerChamadoModal onCancel={handleCancel} chamadoData={call} />);
+        setModalWidth(750);
+        setIsModalOpen(true);
+    };
+
+    // --- RENDER ---
     if (isLoading) return <p>Carregando chamados...</p>;
     if (error) return <p>Erro ao carregar chamados: {error.message}</p>;
 
@@ -192,13 +161,15 @@ const ChamadosPage = () => {
                 buscaValue={buscaValue}
             />
 
-            <CallsList
-                calls={currentCalls}
-                onShowValuesModal={handleShowValuesModal}
-                onShowEditModal={handleShowEditModal}
-                onShowViewModal={handleShowViewModal}
-                onShowUpdateStatusModal={handleShowUpdateStatusModal}
-            />
+            <Spin spinning={isFetching} tip="Atualizando...">
+                <CallsList
+                    calls={currentCalls}
+                    onShowValuesModal={handleShowValuesModal}
+                    onShowEditModal={handleShowEditModal}
+                    onShowViewModal={handleShowViewModal}
+                    onShowUpdateStatusModal={handleShowUpdateStatusModal}
+                />
+            </Spin>
 
             {/* Paginação */}
             <div style={{ textAlign: "right", marginTop: 24 }}>

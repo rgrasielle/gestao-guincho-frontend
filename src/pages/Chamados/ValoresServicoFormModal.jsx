@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Select, Button, Space, Row, Col, Typography, Divider, DatePicker, message } from 'antd';
+import { Form, Input, InputNumber, Select, Button, Space, Row, Col, Typography, Divider, DatePicker } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 import { useValoresFixos } from '../../hooks/useValoresFixos';
-import { useValoresServico } from '../../hooks/useValoresServico.js';
+import { useValoresServico, useSalvarValoresServico } from '../../hooks/useValoresServico';
 import { useEnterToNavigate } from '../../hooks/useEnterToNavigate';
 
 const { Title, Text } = Typography;
@@ -22,8 +22,10 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
         return numValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
-    const { valores: valoresDoServico, isLoading: loadingServico, salvarValores } = useValoresServico(chamadoId);
+    const { data: valoresDoServico, isLoading: loadingServico } = useValoresServico(chamadoId);
     const { data: valoresFixos, isLoading: loadingFixos } = useValoresFixos();
+    const { mutate: salvarValores, isPending: isSaving } = useSalvarValoresServico(chamadoId);
+
     const handleKeyDown = useEnterToNavigate();
 
     const getPriceFormatter = (value) => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -110,65 +112,60 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
     // useEffect para inicializar o formulário
     useEffect(() => {
         form.resetFields();
-        if (valoresDoServico && valoresFixos) { // LIMPA O FORMULÁRIO: Garante que dados de um chamado anterior não apareçam.
 
-            // VERIFICA O CARREGAMENTO: Se os dados (fixos ou do serviço) ainda estiverem carregando,
-            // o hook para por aqui para evitar preencher o form antes da hora.
-            if (loadingServico || loadingFixos) {
-                return;
-            }
-
-            // DEFINE VALORES INICIAIS: Preenche com dados do serviço (se existirem)
-            // ou com os valores fixos padrão (se for um novo registro de valores).
-            const initialFormValues = {
-                ...(valoresDoServico || {}), // Usa os valores do serviço se existirem, senão um objeto vazio para não dar erro
-                pagamentoValorKm: valoresDoServico?.pagamentoValorKm ?? valoresFixos?.valorQuilometragemPorKm ?? 0,
-                pagamentoValorSaida: valoresDoServico?.pagamentoValorSaida ?? valoresFixos?.valorQuilometragemSaida ?? 0,
-                acertoValorKm: valoresDoServico?.acertoValorKm ?? valoresFixos?.valorMotoristaPorKm ?? 0,
-                acertoValorSaida: valoresDoServico?.acertoValorSaida ?? valoresFixos?.valorMotoristaSaida ?? 0,
-                valorHoraParada: valoresDoServico?.valorHoraParada ?? valoresFixos?.valorHoraParada ?? 0,
-                valorHoraTrabalhada: valoresDoServico?.valorHoraTrabalhada ?? valoresFixos?.valorHoraTrabalhada ?? 0,
-                // Ajuste importante: mapear os pedágios para os nomes corretos do form
-                custosPedagio: valoresDoServico?.custosPedagio?.map(p => ({
-                    quantidadePedagio: p.quantidadePedagio ?? p.quantidade ?? 0,
-                    valorPedagio: p.valorPedagio ?? p.valor ?? 0,
-                })) || [],
-                entradaDiarias: valoresDoServico?.entradaDiarias ? dayjs(valoresDoServico.entradaDiarias) : null,
-                saidaDiarias: valoresDoServico?.saidaDiarias ? dayjs(valoresDoServico.saidaDiarias) : null,
-                estadiasDiarias: valoresDoServico?.estadiasDiarias || 0,
-                valorDiaria: valoresDoServico?.valorDiaria ?? valoresFixos?.valorDiaria ?? 0,
-            };
-
-            form.setFieldsValue(initialFormValues);
-            handleValuesChange({}, initialFormValues);
-
+        if (loadingServico || loadingFixos) {
+            return;
         }
+
+        // DEFINE VALORES INICIAIS: Preenche com dados do serviço (se existirem)
+        // ou com os valores fixos padrão (se for um novo registro de valores).
+        const initialFormValues = {
+            ...(valoresDoServico || {}), // Usa os valores do serviço se existirem, senão um objeto vazio para não dar erro
+            pagamentoValorKm: valoresDoServico?.pagamentoValorKm ?? valoresFixos?.valorQuilometragemPorKm ?? 0,
+            pagamentoValorSaida: valoresDoServico?.pagamentoValorSaida ?? valoresFixos?.valorQuilometragemSaida ?? 0,
+            acertoValorKm: valoresDoServico?.acertoValorKm ?? valoresFixos?.valorMotoristaPorKm ?? 0,
+            acertoValorSaida: valoresDoServico?.acertoValorSaida ?? valoresFixos?.valorMotoristaSaida ?? 0,
+            valorHoraParada: valoresDoServico?.valorHoraParada ?? valoresFixos?.valorHoraParada ?? 0,
+            valorHoraTrabalhada: valoresDoServico?.valorHoraTrabalhada ?? valoresFixos?.valorHoraTrabalhada ?? 0,
+            // Ajuste importante: mapear os pedágios para os nomes corretos do form
+            custosPedagio: valoresDoServico?.custosPedagio?.map(p => ({
+                quantidadePedagio: p.quantidadePedagio ?? p.quantidade ?? 0,
+                valorPedagio: p.valorPedagio ?? p.valor ?? 0,
+            })) || [],
+            entradaDiarias: valoresDoServico?.entradaDiarias ? dayjs(valoresDoServico.entradaDiarias) : null,
+            saidaDiarias: valoresDoServico?.saidaDiarias ? dayjs(valoresDoServico.saidaDiarias) : null,
+            estadiasDiarias: valoresDoServico?.estadiasDiarias || 0,
+            valorDiaria: valoresDoServico?.valorDiaria ?? valoresFixos?.valorDiaria ?? 0,
+        };
+
+        form.setFieldsValue(initialFormValues);
+        handleValuesChange({}, initialFormValues);
+
+
     }, [chamadoId, valoresDoServico, valoresFixos, loadingServico, loadingFixos, form, handleValuesChange]);
 
 
     // Função para lidar com o envio do formulário
-    const handleFinish = async (values) => {
-        try {
-            const payload = {
-                ...values,
-                entradaDiarias: values.entradaDiarias ? values.entradaDiarias.toDate() : null,
-                saidaDiarias: values.saidaDiarias ? values.saidaDiarias.toDate() : null,
-                estadiasDiarias: values.estadiasDiarias ? Number(values.estadiasDiarias) : 0,
-                custosPedagio: values.custosPedagio?.map(item => ({
-                    quantidadePedagio: Number(item.quantidadePedagio || 0),
-                    valorPedagio: Number(item.valorPedagio || 0),
-                })) || [],
+    const handleFinish = (values) => {
+        const payload = {
+            ...values,
+            // Formata os dados antes de enviar para a API
+            entradaDiarias: values.entradaDiarias ? values.entradaDiarias.format('YYYY-MM-DD') : null,
+            saidaDiarias: values.saidaDiarias ? values.saidaDiarias.format('YYYY-MM-DD') : null,
+            estadiasDiarias: values.estadiasDiarias ? Number(values.estadiasDiarias) : 0,
+            custosPedagio: values.custosPedagio?.map(item => ({
+                quantidadePedagio: Number(item.quantidadePedagio || 0),
+                valorPedagio: Number(item.valorPedagio || 0),
+            })) || [],
+        };
 
-            };
-
-            await salvarValores(payload);
-            message.success('Valores salvos com sucesso!');
-
-            if (onSave) onSave(payload);   // <-- aqui usa o onSave
-            onCancel()
-        } catch {
-            message.error('Erro ao salvar os valores.');
-        }
+        salvarValores(payload, {
+            onSuccess: () => {
+                // O hook já mostra a notificação de sucesso!
+                // Chamamos a função onSave do pai, que pode conter lógica adicional (como fechar o modal)
+                if (onSave) onSave();
+            }
+        });
     };
 
     return (
@@ -560,7 +557,7 @@ const ValoresServicoFormModal = ({ chamadoId, onCancel, onSave }) => {
                         <Button onClick={onCancel}>
                             Cancelar
                         </Button>
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" loading={isSaving}>
                             Salvar Valores
                         </Button>
                     </Space>

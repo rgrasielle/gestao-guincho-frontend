@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, Typography, notification } from 'antd';
-import { TeamOutlined } from '@ant-design/icons';
+import { Button, Typography, Space, Popover } from 'antd';
+import { TeamOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import CustomModal from '../../components/CustomModal';
 import MotoristaFormModal from '../../components/MotoristaFormModal';
 import DriverList from './DriverList';
 import UpdateDriverAvailabilityModal from './UpdateDriverAvailabilityModal';
+import MotoristaGuinchoStatusTag from '../../components/MotoristaGuinchoStatusTag';
 
 import {
     useMotoristas,
@@ -17,10 +18,9 @@ import {
 const { Title, Text } = Typography;
 
 const MotoristasPage = () => {
-    // Hook para buscar a lista de motoristas
-    const { data: drivers, isLoading } = useMotoristas();
 
-    // Hooks para realizar ações (mutações)
+    // --- ESTADOS E HOOKS ---
+    const { data: drivers, isLoading } = useMotoristas();
     const { mutate: criarMotorista } = useCriarMotorista();
     const { mutate: atualizarMotorista } = useAtualizarMotorista();
     const { mutate: atualizarDisponibilidadeMotorista } = useAtualizarDisponibilidade();
@@ -30,64 +30,99 @@ const MotoristasPage = () => {
     const [modalContent, setModalContent] = useState(null);
     const [modalWidth, setModalWidth] = useState(450);
 
-    const showModal = (title, content, width) => {
+    // --- DADOS DA LEGENDA PARA O POPOVER ---
+    const legendItems = [
+        { status: 'DISPONIVEL', description: 'Nenhum vínculo atual ou futuro.' },
+        { status: 'RESERVADO', description: 'Vinculado a um chamado "Aberto".' },
+        { status: 'EM_ATENDIMENTO', description: 'Vinculado a um chamado "Em Andamento".' },
+        { status: 'INDISPONIVEL', description: 'Indisponível para novos chamados.' }
+    ];
+
+    // Conteúdo JSX para o Popover
+    const legendContent = (
+        <div style={{ maxWidth: '400px' }}>
+            {legendItems.map(item => (
+                <div key={item.status} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                    <MotoristaGuinchoStatusTag status={item.status} />
+                    <Text type="secondary" style={{ marginLeft: '8px', fontSize: '13px' }}>{item.description}</Text>
+                </div>
+            ))}
+        </div>
+    );
+
+    // --- FUNÇÕES DE CONTROLE DO MODAL ---
+    const handleCancel = () => setIsModalOpen(false);
+
+    const showModal = (title, content, width = 450) => {
         setModalTitle(title);
         setModalContent(content);
         setModalWidth(width);
         setIsModalOpen(true);
     };
 
-    // Função para editar motorista
-    const handleEdit = (driverId) => {
+    // --- FUNÇÕES DE AÇÃO ---
+
+    // Ação para SALVAR um novo motorista
+    const handleSaveNew = (formValues) => {
+        criarMotorista(formValues, {
+            onSuccess: () => {
+                // O hook já mostra a notificação e atualiza a lista.
+                // Aqui, só precisamos fechar o modal.
+                handleCancel();
+            }
+        });
+    };
+
+    // Ação para ATUALIZAR um motorista existente
+    const handleSaveEdit = (driverId, formValues) => {
+        atualizarMotorista({ id: driverId, dados: formValues }, {
+            onSuccess: () => {
+                handleCancel();
+            }
+        });
+    };
+
+    // Ação para ATUALIZAR a disponibilidade
+    const handleSaveAvailability = (driverId, formValues) => {
+        atualizarDisponibilidadeMotorista({ id: driverId, disponibilidade: formValues.disponibilidade }, {
+            onSuccess: () => {
+                handleCancel();
+            }
+        });
+    };
+
+    // --- FUNÇÕES PARA ABRIR OS MODAIS ---
+    const handleOpenNewModal = () => {
+        showModal(
+            'Cadastrar Motorista',
+            <MotoristaFormModal onCancel={handleCancel} onSave={handleSaveNew} />
+        );
+    };
+
+    const handleOpenEditModal = (driverId) => {
         const driverToEdit = (drivers || []).find(d => d.id === driverId);
         showModal(
             'Editar Motorista',
             <MotoristaFormModal
                 onCancel={handleCancel}
-                onSave={(values) => handleSave({ ...values, id: driverToEdit.id })}
+                onSave={(values) => handleSaveEdit(driverId, values)}
                 initialData={driverToEdit}
-            />,
-            450
+            />
         );
     };
 
-    // Função para atualizar disponibilidade
-    const handleUpdateAvailability = (driverId) => {
-        const driverToUpdate = drivers.find(d => d.id === driverId);
+    const handleOpenAvailabilityModal = (driverId) => {
+        const driverToUpdate = (drivers || []).find(d => d.id === driverId);
         showModal(
-            '',
+            'Atualizar Disponibilidade',
             <UpdateDriverAvailabilityModal
                 onCancel={handleCancel}
-                onSave={handleSave}
+                onSave={(values) => handleSaveAvailability(driverId, values)}
                 initialData={driverToUpdate}
             />,
             400
         );
     };
-
-    const handleSave = (values) => {
-        const onSuccess = () => {
-            notification.success({ message: 'Motorista salvo com sucesso!' });
-            setIsModalOpen(false);
-        };
-
-        const onError = (error) => {
-            console.error("Erro ao salvar motorista:", error);
-            notification.error({ message: 'Erro ao salvar motorista.' });
-        };
-
-        if (values.id) {
-            if (values.disponibilidade && Object.keys(values).length <= 2) {
-                atualizarDisponibilidadeMotorista({ id: values.id, disponibilidade: values.disponibilidade }, { onSuccess, onError });
-            } else {
-                atualizarMotorista({ id: values.id, dados: values }, { onSuccess, onError });
-            }
-        } else {
-            criarMotorista(values, { onSuccess, onError });
-        }
-    };
-
-    const handleCancel = () => setIsModalOpen(false);
 
     return (
         <div style={{ padding: 10, minHeight: '100vh', background: '#fff' }}>
@@ -96,20 +131,26 @@ const MotoristasPage = () => {
                     <Title level={2} style={{ margin: 0 }}>Motoristas</Title>
                     <Text type="secondary">Gerencie os motoristas da frota</Text>
                 </div>
-                <Button
-                    type="primary"
-                    size="large"
-                    icon={<TeamOutlined />}
-                    onClick={() => showModal('Cadastrar Motorista', <MotoristaFormModal onCancel={handleCancel} onSave={handleSave} />, 450)}
-                >
-                    Cadastrar Motorista
-                </Button>
+                {/* BOTÕES DO CABEÇALHO AGRUPADOS COM O NOVO ÍCONE DE INFO */}
+                <Space size="middle">
+                    <Popover content={legendContent} title={<Title level={5} style={{ margin: 0 }}>Legenda de Status</Title>} trigger="hover">
+                        <InfoCircleOutlined style={{ fontSize: '24px', color: '#1890ff', cursor: 'pointer' }} />
+                    </Popover>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<TeamOutlined />}
+                        onClick={handleOpenNewModal}
+                    >
+                        Cadastrar Motorista
+                    </Button>
+                </Space>
             </div>
 
             <DriverList
                 drivers={drivers}
-                onEdit={handleEdit}
-                onUpdateAvailability={handleUpdateAvailability}
+                onEdit={handleOpenEditModal}
+                onUpdateAvailability={handleOpenAvailabilityModal}
                 isLoading={isLoading}
             />
 
